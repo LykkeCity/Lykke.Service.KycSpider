@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <AssemblyName>Lykke.Service.KycSpider.Services</AssemblyName>
+    <RootNamespace>Lykke.Service.KycSpider.Services</RootNamespace>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Lykke.Common" Version="6.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lykke.Service.KycSpider.Core\Lykke.Service.KycSpider.Core.csproj" />
+  </ItemGroup>
+
+</Project>
