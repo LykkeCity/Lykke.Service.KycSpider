@@ -8,12 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Domain\" />
-    <Folder Include="Services\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Lykke.Common" Version="6.4.0" />
+    <PackageReference Include="Lykke.Service.Kyc.Abstractions" Version="1.0.177" />
   </ItemGroup>
 
 </Project>
