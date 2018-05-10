@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using Lykke.Service.KycSpider.Core.Domain.SpiderCheck;
+using Lykke.Service.KycSpider.Core.Domain.SpiderCheckInfo;
 using Lykke.Service.KycSpider.Core.Repositories;
 using Lykke.Service.KycSpider.Core.Services;
 
@@ -27,11 +27,8 @@ namespace Lykke.Service.KycSpider.Services
 
         public async Task<IGlobalCheckInfo> AddCheckInfo(IGlobalCheckInfo info)
         {
-            var model = _mapper.Map<GlobalCheckInfo>(info);
-            model.Timestamp = DateTimeOffset.UtcNow;
-
-            var entity = await _repository.AddOrUpdateAsync(model);
-            _latestCheckTimestamp = entity.Timestamp.DateTime;
+            var entity = await _repository.AddOrUpdateAsync(info);
+            _latestCheckTimestamp = entity.StartDateTime;
 
             return entity;
         }
@@ -43,8 +40,10 @@ namespace Lykke.Service.KycSpider.Services
                 return _latestCheckTimestamp;
             }
 
-            var timestamp = (await _repository.GetAllByYearAsync(DateTime.UtcNow.Year)).FirstOrDefault()?.Timestamp;
-            _latestCheckTimestamp = timestamp?.DateTime;
+            var latestCheck = (await _repository.GetAllByYearAsync(DateTime.UtcNow.Year))
+                .OrderByDescending(x => x.StartDateTime).FirstOrDefault();
+
+            _latestCheckTimestamp = latestCheck?.StartDateTime;
             _isRequestForLatestCheckPerformed = true;
 
             return _latestCheckTimestamp;

@@ -1,10 +1,11 @@
 ﻿using System;
 
-namespace Lykke.Service.KycSpider.Core.Domain.SpiderCheck
+namespace Lykke.Service.KycSpider.Core.Domain.SpiderCheckInfo
 {
     public interface IGlobalCheckInfo
     {
-        DateTimeOffset Timestamp { get; }
+        DateTime StartDateTime { get; }
+        DateTime EndDateTime { get; }
 
         int SpiderChecks { get; }
         int PepSuspects { get; }

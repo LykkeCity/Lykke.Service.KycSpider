@@ -1,6 +1,6 @@
-﻿using Lykke.Service.KycSpider.Core.Domain.CheckPerson;
+﻿using Lykke.Service.KycSpider.Core.Domain.SpiderCheck;
 
-namespace Lykke.Service.KycSpider.Core.Domain.SpiderCheck
+namespace Lykke.Service.KycSpider.Core.Domain.SpiderCheckInfo
 {
     public class SpiderDocumentInfo : ISpiderDocumentInfo
     {
@@ -10,6 +10,8 @@ namespace Lykke.Service.KycSpider.Core.Domain.SpiderCheck
         public string CurrentCheckId { get; set; }
         public string PreviousCheckId { get; set; }
 
-        public ICheckPersonResultDiff CheckDiff { get; set; }
+        public SpiderCheckResultDiff CheckDiff { get; set; }
+
+        ISpiderCheckResultDiff ISpiderDocumentInfo.CheckDiff => CheckDiff;
     }
 }

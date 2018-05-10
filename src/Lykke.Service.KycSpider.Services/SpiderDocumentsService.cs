@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Lykke.Service.KycSpider.Core.Domain.SpiderCheck;
+using Lykke.Service.KycSpider.Core.Domain.SpiderCheckInfo;
 using Lykke.Service.KycSpider.Core.Repositories;
 using Lykke.Service.KycSpider.Core.Services;
 

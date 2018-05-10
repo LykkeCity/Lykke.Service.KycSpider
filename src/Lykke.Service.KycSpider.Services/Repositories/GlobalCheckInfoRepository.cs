@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AzureStorage;
-using Lykke.Service.KycSpider.Core.Domain.SpiderCheck;
+using Lykke.Service.KycSpider.Core.Domain.SpiderCheckInfo;
 using Lykke.Service.KycSpider.Core.Repositories;
 
 namespace Lykke.Service.KycSpider.Services.Repositories
@@ -19,11 +19,11 @@ namespace Lykke.Service.KycSpider.Services.Repositories
         public async Task<IGlobalCheckInfo> AddOrUpdateAsync(IGlobalCheckInfo entity)
         {
             var newEntity = GlobalCheckInfoEntity.Create(entity);
-            await _tableStorage.InsertAndGenerateRowKeyAsDateTimeAsync(newEntity, newEntity.Timestamp.DateTime);
+            await _tableStorage.InsertAndGenerateRowKeyAsDateTimeAsync(newEntity, newEntity.StartDateTime);
             return newEntity;
         }
 
-        public async Task<IGlobalCheckInfo> GetAsync(DateTimeOffset timestamp)
+        public async Task<IGlobalCheckInfo> GetAsync(DateTime timestamp)
         {
             var partitionKey = GlobalCheckInfoEntity.GeneratePartitionKey(timestamp);
             var rowKey = GlobalCheckInfoEntity.GenerateRowKey(timestamp);
@@ -38,7 +38,7 @@ namespace Lykke.Service.KycSpider.Services.Repositories
             return await _tableStorage.GetDataAsync(partitionKey);
         }
 
-        public async Task<IGlobalCheckInfo> DeleteAsync(DateTimeOffset timestamp)
+        public async Task<IGlobalCheckInfo> DeleteAsync(DateTime timestamp)
         {
             var partitionKey = GlobalCheckInfoEntity.GeneratePartitionKey(timestamp);
             var rowKey = GlobalCheckInfoEntity.GenerateRowKey(timestamp);

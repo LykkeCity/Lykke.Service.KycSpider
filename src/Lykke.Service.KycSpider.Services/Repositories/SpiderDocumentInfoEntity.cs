@@ -1,7 +1,7 @@
 ﻿using Lykke.AzureStorage.Tables;
 using Lykke.AzureStorage.Tables.Entity.Annotation;
-using Lykke.Service.KycSpider.Core.Domain.CheckPerson;
 using Lykke.Service.KycSpider.Core.Domain.SpiderCheck;
+using Lykke.Service.KycSpider.Core.Domain.SpiderCheckInfo;
 
 namespace Lykke.Service.KycSpider.Services.Repositories
 {
@@ -14,8 +14,8 @@ namespace Lykke.Service.KycSpider.Services.Repositories
         public string PreviousCheckId { get; set; }
 
         [JsonValueSerializer]
-        public ICheckPersonResultDiff CheckDiff { get; set; }
-        
+        public ISpiderCheckResultDiff CheckDiff { get; set; }
+
         public static string GeneratePartitionKey(string documentId) => documentId;
         public static string GenerateRowKey(string clientId) => clientId;
 

@@ -1,15 +1,13 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Lykke.Service.Kyc.Abstractions.Domain.Verification;
-using Lykke.Service.KycSpider.Core.Domain.CheckPerson;
+﻿using Lykke.Service.KycSpider.Core.Domain.PersonDiff;
+using Lykke.Service.KycSpider.Core.Domain.SpiderCheck;
 
 namespace Lykke.Service.KycSpider.Core.Services
 {
     public interface ICheckPersonResultDiffService
     {
-        Task<IReadOnlyCollection<IGlobalCheckPersonResult>> ComputeAllDiffsAsync(IEnumerable<IGlobalCheckPersonRequest> requests);
-        ICheckPersonResultDiff ComputeDiffWithEmptyByPep(IKycCheckPersonResult result);
-        ICheckPersonResultDiff ComputeDiffWithEmptyByCrime(IKycCheckPersonResult result);
-        ICheckPersonResultDiff ComputeDiffWithEmptyBySanction(IKycCheckPersonResult result);
+        IPersonDiffResult ComputeAllDiffs(IPersonDiffRequest request);
+        ISpiderCheckResultDiff ComputeDiffWithEmptyByPep(ISpiderCheckResult result);
+        ISpiderCheckResultDiff ComputeDiffWithEmptyByCrime(ISpiderCheckResult result);
+        ISpiderCheckResultDiff ComputeDiffWithEmptyBySanction(ISpiderCheckResult result);
     }
 }

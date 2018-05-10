@@ -1,5 +1,5 @@
 ﻿using Lykke.AzureStorage.Tables;
-using Lykke.Service.KycSpider.Core.Domain.SpiderCheck;
+using Lykke.Service.KycSpider.Core.Domain.SpiderCheckInfo;
 
 namespace Lykke.Service.KycSpider.Services.Repositories
 {

@@ -1,4 +1,4 @@
-﻿namespace Lykke.Service.KycSpider.Core.Domain.SpiderCheck
+﻿namespace Lykke.Service.KycSpider.Core.Domain.SpiderCheckInfo
 {
     public interface IVerifiableCustomerInfo
     {

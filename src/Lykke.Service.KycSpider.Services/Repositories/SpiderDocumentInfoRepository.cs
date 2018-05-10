@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using AzureStorage;
-using Lykke.Service.KycSpider.Core.Domain.SpiderCheck;
+using Lykke.Service.KycSpider.Core.Domain.SpiderCheckInfo;
 using Lykke.Service.KycSpider.Core.Repositories;
 
 namespace Lykke.Service.KycSpider.Services.Repositories
