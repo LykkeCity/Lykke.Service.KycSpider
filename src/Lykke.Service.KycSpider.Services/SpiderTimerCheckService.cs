@@ -17,7 +17,7 @@ using Lykke.Service.PersonalData.Contract.Models.Documents;
 
 namespace Lykke.Service.KycSpider.Services
 {
-    public class SpiderRegularCheckService : ISpiderRegularCheckService
+    public class SpiderTimerCheckService : ISpiderTimerCheckService
     {
         private readonly TimeSpan _dailyCheckTimeUtc;
 
@@ -30,7 +30,7 @@ namespace Lykke.Service.KycSpider.Services
         private readonly ISpiderCheckResultRepository _spiderCheckResultRepository;
         private readonly ILog _log;
 
-        public SpiderRegularCheckService
+        public SpiderTimerCheckService
         (
             SpiderCheckSettings settings,
             IGlobalCheckInfoService globalCheckInfoService,
@@ -85,7 +85,7 @@ namespace Lykke.Service.KycSpider.Services
                     var now = DateTime.UtcNow;
                     if (_regularCheckStartDateTime.AddHours(RegularCheckHoursDurationToWarn) < now && !_regularCheckWarningLogged)
                     {
-                        await _log.WriteWarningAsync(nameof(SpiderRegularCheckService), nameof(PerformCheckAsync),
+                        await _log.WriteWarningAsync(nameof(SpiderTimerCheckService), nameof(PerformCheckAsync),
                             $"Regular check lasts more then {RegularCheckHoursDurationToWarn} hours is starts at {_regularCheckStartDateTime}");
                         _regularCheckWarningLogged = true;
                     }
@@ -111,7 +111,7 @@ namespace Lykke.Service.KycSpider.Services
 
         private async Task PerformInstantCheckAsync()
         {
-            await _log.WriteInfoAsync(nameof(SpiderRegularCheckService), nameof(PerformInstantCheckAsync), "started");
+            await _log.WriteInfoAsync(nameof(SpiderTimerCheckService), nameof(PerformInstantCheckAsync), "started");
 
             var pepDocs = await _typedDocumentsService.GetAllPepCheckDocumentsByStateAsync(DocumentStates.Draft, null, null);
             var crimeDocs = await _typedDocumentsService.GetAllCrimeCheckDocumentsByStateAsync(DocumentStates.Draft, null, null);
@@ -158,7 +158,7 @@ namespace Lykke.Service.KycSpider.Services
                 await UpdateVerifiableCustomer(state);
             }
 
-            await _log.WriteInfoAsync(nameof(SpiderRegularCheckService), nameof(PerformInstantCheckAsync), "done");
+            await _log.WriteInfoAsync(nameof(SpiderTimerCheckService), nameof(PerformInstantCheckAsync), "done");
         }
 
         private class InstantCheckState
@@ -208,6 +208,8 @@ namespace Lykke.Service.KycSpider.Services
 
                 doc.CheckDateTime = DateTime.UtcNow;
 
+                await _log.WriteInfoAsync(nameof(SpiderTimerCheckService), nameof(FormAndUpdateDocuments),
+                    $"Set status {doc.State} for DocumentId: {doc.DocumentId} for ClientId: {doc.CustomerId}");
                 await _typedDocumentsService.AddOrUpdatePepCheckDocumentAsync(doc);
                 await _spiderDocumentInfoRepository.AddOrUpdateAsync(FormSpiderDocumentInfo(currentResultId, diff, doc));
             }
@@ -228,7 +230,8 @@ namespace Lykke.Service.KycSpider.Services
                 }
 
                 doc.CheckDateTime = DateTime.UtcNow;
-
+                await _log.WriteInfoAsync(nameof(SpiderTimerCheckService), nameof(FormAndUpdateDocuments),
+                    $"Set status {doc.State} for DocumentId: {doc.DocumentId} for ClientId: {doc.CustomerId}");
                 await _typedDocumentsService.AddOrUpdateCrimeCheckDocumentAsync(doc);
                 await _spiderDocumentInfoRepository.AddOrUpdateAsync(FormSpiderDocumentInfo(currentResultId, diff, doc));
             }
@@ -249,7 +252,8 @@ namespace Lykke.Service.KycSpider.Services
                 }
 
                 doc.CheckDateTime = DateTime.UtcNow;
-
+                await _log.WriteInfoAsync(nameof(SpiderTimerCheckService), nameof(FormAndUpdateDocuments),
+                    $"Set status {doc.State} for DocumentId: {doc.DocumentId} for ClientId: {doc.CustomerId}");
                 await _typedDocumentsService.AddOrUpdateSanctionCheckDocumentAsync(doc);
                 await _spiderDocumentInfoRepository.AddOrUpdateAsync(FormSpiderDocumentInfo(currentResultId, diff, doc));
             }
@@ -257,7 +261,7 @@ namespace Lykke.Service.KycSpider.Services
 
         private async Task PerformRegularCheckAsync()
         {
-            await _log.WriteInfoAsync(nameof(SpiderRegularCheckService), nameof(PerformRegularCheckAsync), "started");
+            await _log.WriteInfoAsync(nameof(SpiderTimerCheckService), nameof(PerformRegularCheckAsync), "started");
 
             var startDateTime = DateTime.UtcNow;
             var stats = new List<IGlobalCheckInfo>();
@@ -281,7 +285,7 @@ namespace Lykke.Service.KycSpider.Services
             var endDateTime = DateTime.UtcNow;
             var checkInfo = SumStatistics(stats, startDateTime, endDateTime);
             await _globalCheckInfoService.AddCheckInfo(checkInfo);
-            await _log.WriteInfoAsync(nameof(SpiderRegularCheckService), nameof(PerformRegularCheckAsync), "done");
+            await _log.WriteInfoAsync(nameof(SpiderTimerCheckService), nameof(PerformRegularCheckAsync), "done");
         }
 
         private async Task<IGlobalCheckInfo> PerformRegularCheckAsync(IEnumerable<IVerifiableCustomerInfo> customers)
@@ -321,8 +325,14 @@ namespace Lykke.Service.KycSpider.Services
                         CheckDateTime = DateTime.UtcNow,
                         State = DocumentStates.Uploaded
                     });
-
+                    await _log.WriteInfoAsync(nameof(SpiderTimerCheckService), nameof(FormAndUpdateDocuments),
+                        $"Client {doc.CustomerId} is suspected for pep created new document (DocumentId: {doc.DocumentId})");
                     await _spiderDocumentInfoRepository.AddOrUpdateAsync(FormSpiderDocumentInfo(request, diff, doc));
+                }
+                else
+                {
+                    await _log.WriteInfoAsync(nameof(SpiderTimerCheckService), nameof(FormAndUpdateDocuments),
+                        $"Client {request.Customer.CustomerId} is not suspected for pep");
                 }
             }
 
@@ -338,8 +348,14 @@ namespace Lykke.Service.KycSpider.Services
                         CheckDateTime = DateTime.UtcNow,
                         State = DocumentStates.Uploaded
                     });
-
+                    await _log.WriteInfoAsync(nameof(SpiderTimerCheckService), nameof(FormAndUpdateDocuments),
+                        $"Client {doc.CustomerId} is suspected for crime created new document (DocumentId: {doc.DocumentId})");
                     await _spiderDocumentInfoRepository.AddOrUpdateAsync(FormSpiderDocumentInfo(request, diff, doc));
+                }
+                else
+                {
+                    await _log.WriteInfoAsync(nameof(SpiderTimerCheckService), nameof(FormAndUpdateDocuments),
+                        $"Client {request.Customer.CustomerId} is not suspected for crime");
                 }
             }
 
@@ -355,8 +371,14 @@ namespace Lykke.Service.KycSpider.Services
                         CheckDateTime = DateTime.UtcNow,
                         State = DocumentStates.Uploaded
                     });
-
+                    await _log.WriteInfoAsync(nameof(SpiderTimerCheckService), nameof(FormAndUpdateDocuments),
+                        $"Client {doc.CustomerId} is suspected for sanction created new document (DocumentId: {doc.DocumentId})");
                     await _spiderDocumentInfoRepository.AddOrUpdateAsync(FormSpiderDocumentInfo(request, diff, doc));
+                }
+                else
+                {
+                    await _log.WriteInfoAsync(nameof(SpiderTimerCheckService), nameof(FormAndUpdateDocuments),
+                        $"Client {request.Customer.CustomerId} is not suspected for sanction");
                 }
             }
         }

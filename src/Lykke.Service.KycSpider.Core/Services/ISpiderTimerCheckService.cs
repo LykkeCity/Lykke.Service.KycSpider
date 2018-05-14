@@ -2,7 +2,7 @@
 
 namespace Lykke.Service.KycSpider.Core.Services
 {
-    public interface ISpiderRegularCheckService
+    public interface ISpiderTimerCheckService
     {
         Task PerformCheckAsync();
     }
