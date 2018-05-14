@@ -11,8 +11,6 @@ using Lykke.Service.KycSpider.Settings.ServiceSettings;
 using Lykke.Service.KycSpider.Services;
 using Lykke.Service.KycSpider.Services.Repositories;
 using Lykke.Service.KycSpider.Settings;
-using Lykke.Service.PersonalData.Client;
-using Lykke.Service.PersonalData.Contract;
 using Lykke.SettingsReader;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.WindowsAzure.Storage.Table;
@@ -56,6 +54,8 @@ namespace Lykke.Service.KycSpider.Modules
                 .AddService<GlobalCheckInfoService, IGlobalCheckInfoService>()
                 .AddService<SpiderDocumentsService, ISpiderDocumentsService>()
                 .AddService<VerifiableCustomerService, IVerifiableCustomerService>()
+                .AddService<SpiderRegularCheckService, ISpiderRegularCheckService>()
+                .AddService<SpiderInstantCheckService, ISpiderInstantCheckService>()
                 .AddService<SpiderCheckService, ISpiderCheckService>(TypedParameter.From(_settings.CurrentValue.EuroSpiderServiceSettings))
 
                 .AddService<SpiderTimerCheckService, ISpiderTimerCheckService>(
