@@ -1,23 +1,65 @@
-﻿using System;
+﻿using System.Threading.Tasks;
 using Common.Log;
+using Lykke.Service.KycSpider.Client.AutorestClient;
+using Lykke.Service.KycSpider.Client.AutorestClient.Models;
 
 namespace Lykke.Service.KycSpider.Client
 {
-    public class KycSpiderClient : IKycSpiderClient, IDisposable
+    /// <summary>
+    /// Provides methods to interact with Kyc Spider Service
+    /// </summary>
+    public class KycSpiderClient : IKycSpiderClient
     {
+        private readonly IKycSpiderAPI _api;
         private readonly ILog _log;
 
-        public KycSpiderClient(string serviceUrl, ILog log)
+        /// <summary>
+        /// Initializes a new instance of the KycSpiderClient class.
+        /// </summary>
+        public KycSpiderClient(IKycSpiderAPI api, string serviceUrl, ILog log)
         {
+            _api = api;
             _log = log;
         }
 
-        public void Dispose()
+        /// <summary>
+        /// Gets spider-specific information about check document
+        /// </summary>
+        public Task<SpiderDocumentInfo> GetSpiderDocumentInfoAsync(string clientId, string documentId)
         {
-            //if (_service == null)
-            //    return;
-            //_service.Dispose();
-            //_service = null;
+            return _api.ApiSpiderDocumentsByClientIdByDocumentIdGetAsync(clientId, documentId);
+        }
+
+        /// <summary>
+        /// Gets information about customer which is checks regularly by Kyc Spider Service
+        /// </summary>
+        public Task<VerifiableCustomerInfo> GetVerifiableCustomerInfoAsync(string clientId)
+        {
+            return _api.ApiVerifiableCustomersByClientIdGetAsync(clientId);
+        }
+
+        /// <summary>
+        /// Disables regular pep check of customer
+        /// </summary>
+        public Task DisableCustomerPepCheckAsync(string clientId)
+        {
+            return _api.ApiVerifiableCustomersDisablecheckByClientIdPepPostAsync(clientId);
+        }
+
+        /// <summary>
+        /// Disables regular crime check of customer
+        /// </summary>
+        public Task DisableCustomerCrimeCheckAsync(string clientId)
+        {
+            return _api.ApiVerifiableCustomersDisablecheckByClientIdCrimePostAsync(clientId);
+        }
+
+        /// <summary>
+        /// Disables regular sanction check of customer
+        /// </summary>
+        public Task DisableCustomerSanctionCheckAsync(string clientId)
+        {
+            return _api.ApiVerifiableCustomersDisablecheckByClientIdSanctionPostAsync(clientId);
         }
     }
 }
