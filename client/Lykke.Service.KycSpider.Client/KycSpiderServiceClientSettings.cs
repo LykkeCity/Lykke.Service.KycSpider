@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Lykke.Service.KycSpider.Client 
+﻿namespace Lykke.Service.KycSpider.Client 
 {
     /// <summary>
     /// Settings to initialize client of  Kyc Spider Service

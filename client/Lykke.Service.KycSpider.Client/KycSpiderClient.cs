@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Common.Log;
 using Lykke.Service.KycSpider.Client.AutorestClient;
 using Lykke.Service.KycSpider.Client.AutorestClient.Models;
 
@@ -11,15 +10,13 @@ namespace Lykke.Service.KycSpider.Client
     public class KycSpiderClient : IKycSpiderClient
     {
         private readonly IKycSpiderAPI _api;
-        private readonly ILog _log;
 
         /// <summary>
         /// Initializes a new instance of the KycSpiderClient class.
         /// </summary>
-        public KycSpiderClient(IKycSpiderAPI api, string serviceUrl, ILog log)
+        public KycSpiderClient(IKycSpiderAPI api)
         {
             _api = api;
-            _log = log;
         }
 
         /// <summary>

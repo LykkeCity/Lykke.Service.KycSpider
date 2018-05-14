@@ -11,18 +11,15 @@ namespace Lykke.Service.KycSpider.Services
     public class GlobalCheckInfoService : IGlobalCheckInfoService
     {
         private readonly IGlobalCheckInfoRepository _repository;
-        private readonly IMapper _mapper;
         private bool _isRequestForLatestCheckPerformed;
         private DateTime? _latestCheckTimestamp;
 
         public GlobalCheckInfoService
         (
-            IGlobalCheckInfoRepository repository,
-            IMapper mapper
+            IGlobalCheckInfoRepository repository
         )
         {
             _repository = repository;
-            _mapper = mapper;
         }
 
         public async Task<IGlobalCheckInfo> AddCheckInfo(IGlobalCheckInfo info)

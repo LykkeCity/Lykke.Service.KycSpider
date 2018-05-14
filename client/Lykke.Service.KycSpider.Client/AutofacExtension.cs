@@ -18,8 +18,7 @@ namespace Lykke.Service.KycSpider.Client
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(serviceUrl));
 
             builder.RegisterType<KycSpiderClient>()
-                .WithParameter("serviceUrl", serviceUrl)
-                .WithParameter("api", new KycSpiderAPI())
+                .WithParameter("api", new KycSpiderAPI(new Uri(serviceUrl)))
                 .As<IKycSpiderClient>()
                 .SingleInstance();
         }
