@@ -181,7 +181,7 @@ namespace Lykke.Service.KycSpider.Services
                 DocumentId = doc.DocumentId,
                 CheckDiff = Mapper.Map<SpiderCheckResultDiff>(diff),
                 CurrentCheckId = request.CurrentResult.ResultId,
-                PreviousCheckId = request.CurrentResult.ResultId
+                PreviousCheckId = request.PreviousResult.ResultId
             };
         }
 
