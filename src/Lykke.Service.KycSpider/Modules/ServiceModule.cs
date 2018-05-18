@@ -58,7 +58,7 @@ namespace Lykke.Service.KycSpider.Modules
                 .AddService<SpiderInstantCheckService, ISpiderInstantCheckService>()
                 .AddService<SpiderCheckService, ISpiderCheckService>(TypedParameter.From(_settings.CurrentValue.EuroSpiderServiceSettings))
 
-                .AddService<SpiderTimerCheckService, ISpiderTimerCheckService>(
+                .AddService<SpiderCheckManagerService, ISpiderCheckManagerService>(
                     TypedParameter.From(_settings.CurrentValue.SpiderCheckSettings))
 
                 .AddService<GlobalCheckInfoRepository, IGlobalCheckInfoRepository>(

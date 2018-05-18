@@ -8,17 +8,17 @@ namespace Lykke.Service.KycSpider.PeriodicalHandlers
 {
     public class SpiderCheckPeriodicalHandler : TimerPeriod
     {
-        private readonly ISpiderTimerCheckService _spiderTimerCheckService;
+        private readonly ISpiderCheckManagerService _spiderCheckManagerService;
 
-        public SpiderCheckPeriodicalHandler(ISpiderTimerCheckService spiderTimerCheckService, SpiderCheckSettings settings, ILog log) :
+        public SpiderCheckPeriodicalHandler(ISpiderCheckManagerService spiderCheckManagerService, SpiderCheckSettings settings, ILog log) :
             base(nameof(SpiderCheckPeriodicalHandler), (int)settings.InstantCheckDelay.TotalMilliseconds, log)
         {
-            _spiderTimerCheckService = spiderTimerCheckService;
+            _spiderCheckManagerService = spiderCheckManagerService;
         }
 
         public override async Task Execute()
         {
-            await _spiderTimerCheckService.PerformCheckAsync();
+            await _spiderCheckManagerService.OnTimerAsync();
         }
     }
 }
