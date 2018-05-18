@@ -15,8 +15,9 @@ namespace Lykke.Service.KycSpider.Services.Repositories
         public DateTime CheckDateTime { get; set; }
 
         [JsonValueSerializer]
-        public IReadOnlyCollection<ISpiderProfile> PersonProfiles { get; set; }
+        public IReadOnlyCollection<SpiderProfile> PersonProfiles { get; set; }
 
+        IReadOnlyCollection<ISpiderProfile> ISpiderCheckResult.PersonProfiles => PersonProfiles;
 
         public static string GeneratePartitionKey(string clientId) => clientId;
         public static string GenerateRowKey(string resultId) => resultId ?? Guid.NewGuid().ToString();
@@ -24,7 +25,7 @@ namespace Lykke.Service.KycSpider.Services.Repositories
         public static SpiderCheckResultEntity Create(ISpiderCheckResult src)
         {
             var entity = Mapper.Map<SpiderCheckResultEntity>(src);
-
+            entity.PersonProfiles = Mapper.Map<SpiderProfile[]>(src.PersonProfiles);
             entity.PartitionKey = GeneratePartitionKey(src.CustomerId);
             entity.RowKey = GenerateRowKey(src.ResultId);
 

@@ -84,30 +84,36 @@ namespace Lykke.Service.KycSpider.Services
 
             foreach (var customer in customers)
             {
-                try
+                var request = new PersonDiffRequest
                 {
-                    var request = new PersonDiffRequest
-                    {
-                        Customer = customer,
-                        CurrentResult = await _spiderCheckService.CheckAsync(customer.CustomerId),
-                        PreviousResult =
-                            await _spiderCheckResultRepository.GetAsync(customer.CustomerId,
-                                customer.LatestSpiderCheckId)
-                    };
+                    Customer = customer,
+                    CurrentResult = await _spiderCheckService.CheckAsync(customer.CustomerId),
+                    PreviousResult = await _spiderCheckResultRepository.GetAsync(customer.CustomerId, customer.LatestSpiderCheckId)
+                };
 
-                    var result = _diffService.ComputeAllDiffs(request);
+                var result = _diffService.ComputeAllDiffs(request);
 
-                    await SaveDocuments(request, result);
+                await SaveDocuments(request, result);
+                await UpdateVerifiableCustomer(customer, request.CurrentResult.ResultId);
 
-                    stats.Add(ComputeStatistics(request, result));
-                }
-                catch (Exception ex)
-                {
-                    await _log.WriteErrorAsync(nameof(SpiderRegularCheckService), nameof(PerformRegularCheckAsync), ex);
-                }
+                stats.Add(ComputeStatistics(request, result));
             }
 
             return SumStatistics(stats);
+        }
+
+        private async Task UpdateVerifiableCustomer(IVerifiableCustomerInfo customer, string latestCheckId)
+        {
+            var newCustomer = new VerifiableCustomerInfo
+            {
+                CustomerId = customer.CustomerId,
+                IsCrimeCheckRequired = customer.IsCrimeCheckRequired,
+                IsSanctionCheckRequired = customer.IsSanctionCheckRequired,
+                IsPepCheckRequired = customer.IsPepCheckRequired,
+                LatestSpiderCheckId = latestCheckId
+            };
+
+            await _verifiableCustomerRepository.AddOrUpdateAsync(newCustomer);
         }
 
         private async Task SaveDocuments(IPersonDiffRequest request, IPersonDiffResult result)

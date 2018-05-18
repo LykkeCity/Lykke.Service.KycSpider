@@ -1,4 +1,6 @@
-﻿using Lykke.AzureStorage.Tables;
+﻿using System.Collections.Generic;
+using AutoMapper;
+using Lykke.AzureStorage.Tables;
 using Lykke.AzureStorage.Tables.Entity.Annotation;
 using Lykke.Service.KycSpider.Core.Domain.SpiderCheck;
 using Lykke.Service.KycSpider.Core.Domain.SpiderCheckInfo;
@@ -14,7 +16,9 @@ namespace Lykke.Service.KycSpider.Services.Repositories
         public string PreviousCheckId { get; set; }
 
         [JsonValueSerializer]
-        public ISpiderCheckResultDiff CheckDiff { get; set; }
+        public SpiderCheckResultDiff CheckDiff { get; set; }
+
+        ISpiderCheckResultDiff ISpiderDocumentInfo.CheckDiff => CheckDiff;
 
         public static string GeneratePartitionKey(string documentId) => documentId;
         public static string GenerateRowKey(string clientId) => clientId;
@@ -28,7 +32,7 @@ namespace Lykke.Service.KycSpider.Services.Repositories
 
                 CurrentCheckId = src.CurrentCheckId,
                 PreviousCheckId = src.PreviousCheckId,
-                CheckDiff = src.CheckDiff
+                CheckDiff = Mapper.Map<SpiderCheckResultDiff>(src.CheckDiff)
             };
         }
     }

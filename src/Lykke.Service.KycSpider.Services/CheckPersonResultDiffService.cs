@@ -124,7 +124,7 @@ namespace Lykke.Service.KycSpider.Services
             var first = firstSource.ToHashSet(comparer);
             var second = secondSource.ToHashSet(comparer);
 
-            var intersection = first.Intersect(second).ToHashSet(comparer);
+            var intersection = first.Intersect(second, comparer).ToHashSet(comparer);
 
             first.RemoveWhere(x => intersection.Contains(x, comparer));
             second.RemoveWhere(x => intersection.Contains(x, comparer));
