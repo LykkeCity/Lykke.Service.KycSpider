@@ -35,6 +35,12 @@ namespace Lykke.Service.KycSpider.Services
         public async Task<ISpiderCheckResult> CheckAsync(string clientId)
         {
             var personalData = await _personalDataService.GetAsync(clientId);
+
+            if (personalData == null)
+            {
+                throw new InvalidOperationException($"No personal data for ClientId:{clientId} but spider check requested");
+            }
+
             var request = new checkPerson(FormRequest(personalData));
             var result = await PerformCheck(request);
             var mappedResult = MapResult(personalData, result);       

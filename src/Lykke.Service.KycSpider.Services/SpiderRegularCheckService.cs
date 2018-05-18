@@ -84,18 +84,27 @@ namespace Lykke.Service.KycSpider.Services
 
             foreach (var customer in customers)
             {
-                var request = new PersonDiffRequest
+                try
                 {
-                    Customer = customer,
-                    CurrentResult = await _spiderCheckService.CheckAsync(customer.CustomerId),
-                    PreviousResult = await _spiderCheckResultRepository.GetAsync(customer.CustomerId, customer.LatestSpiderCheckId)
-                };
+                    var request = new PersonDiffRequest
+                    {
+                        Customer = customer,
+                        CurrentResult = await _spiderCheckService.CheckAsync(customer.CustomerId),
+                        PreviousResult =
+                            await _spiderCheckResultRepository.GetAsync(customer.CustomerId,
+                                customer.LatestSpiderCheckId)
+                    };
 
-                var result = _diffService.ComputeAllDiffs(request);
+                    var result = _diffService.ComputeAllDiffs(request);
 
-                await SaveDocuments(request, result);
+                    await SaveDocuments(request, result);
 
-                stats.Add(ComputeStatistics(request, result));
+                    stats.Add(ComputeStatistics(request, result));
+                }
+                catch (Exception ex)
+                {
+                    await _log.WriteErrorAsync(nameof(SpiderRegularCheckService), nameof(PerformRegularCheckAsync), ex);
+                }
             }
 
             return SumStatistics(stats);
