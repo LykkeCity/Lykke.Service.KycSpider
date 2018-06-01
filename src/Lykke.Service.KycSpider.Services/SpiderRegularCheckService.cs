@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Common.Log;
+using Lykke.Service.Kyc.Abstractions.Requests;
+using Lykke.Service.Kyc.Client;
 using Lykke.Service.KycSpider.Core.Domain.PersonDiff;
 using Lykke.Service.KycSpider.Core.Domain.SpiderCheck;
 using Lykke.Service.KycSpider.Core.Domain.SpiderCheckInfo;
@@ -25,7 +27,13 @@ namespace Lykke.Service.KycSpider.Services
         private readonly ITypedDocumentsService _typedDocumentsService;
         private readonly ISpiderCheckService _spiderCheckService;
         private readonly ISpiderCheckResultRepository _spiderCheckResultRepository;
+        private readonly IRequestableDocumentsServiceClient _requestableDocumentsService;
         private readonly ILog _log;
+
+        private static readonly Changer SpiderChanger = new Changer
+        {
+            Name = "Spider"
+        };
 
         public SpiderRegularCheckService
         (
@@ -36,6 +44,7 @@ namespace Lykke.Service.KycSpider.Services
             ITypedDocumentsService typedDocumentsService,
             ISpiderCheckService spiderCheckService,
             ISpiderCheckResultRepository spiderCheckResultRepository,
+            IRequestableDocumentsServiceClient requestableDocumentsService,
             ILog log
         )
         {
@@ -46,6 +55,7 @@ namespace Lykke.Service.KycSpider.Services
             _typedDocumentsService = typedDocumentsService;
             _spiderCheckService = spiderCheckService;
             _spiderCheckResultRepository = spiderCheckResultRepository;
+            _requestableDocumentsService = requestableDocumentsService;
             _log = log;
         }
 
@@ -124,9 +134,15 @@ namespace Lykke.Service.KycSpider.Services
 
                 if (IsSuspectedDiff(diff))
                 {
+                    var emptyDoc = await _requestableDocumentsService.RequestDocumentFromOfficerAsync(
+                        request.Customer.CustomerId,
+                        DocumentTypes.PepCheckDocument,
+                        SpiderChanger);
+
                     var doc = await _typedDocumentsService.AddOrUpdatePepCheckDocumentAsync(new PepCheckDocument
                     {
-                        CustomerId = request.Customer.CustomerId,
+                        DocumentId = emptyDoc.DocumentId,
+                        CustomerId = emptyDoc.CustomerId,
                         CheckDateTime = DateTime.UtcNow,
                         State = DocumentStates.Uploaded
                     });
@@ -147,9 +163,15 @@ namespace Lykke.Service.KycSpider.Services
 
                 if (IsSuspectedDiff(diff))
                 {
+                    var emptyDoc = await _requestableDocumentsService.RequestDocumentFromOfficerAsync(
+                        request.Customer.CustomerId,
+                        DocumentTypes.CrimeCheckDocument,
+                        SpiderChanger);
+
                     var doc = await _typedDocumentsService.AddOrUpdateCrimeCheckDocumentAsync(new CrimeCheckDocument
                     {
-                        CustomerId = request.Customer.CustomerId,
+                        DocumentId = emptyDoc.DocumentId,
+                        CustomerId = emptyDoc.CustomerId,
                         CheckDateTime = DateTime.UtcNow,
                         State = DocumentStates.Uploaded
                     });
@@ -170,9 +192,15 @@ namespace Lykke.Service.KycSpider.Services
 
                 if (IsSuspectedDiff(diff))
                 {
+                    var emptyDoc = await _requestableDocumentsService.RequestDocumentFromOfficerAsync(
+                        request.Customer.CustomerId,
+                        DocumentTypes.SanctionCheckDocument,
+                        SpiderChanger);
+
                     var doc = await _typedDocumentsService.AddOrUpdateSanctionCheckDocumentAsync(new SanctionCheckDocument
                     {
-                        CustomerId = request.Customer.CustomerId,
+                        DocumentId = emptyDoc.DocumentId,
+                        CustomerId = emptyDoc.CustomerId,
                         CheckDateTime = DateTime.UtcNow,
                         State = DocumentStates.Uploaded
                     });

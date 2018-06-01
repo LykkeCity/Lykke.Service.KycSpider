@@ -714,7 +714,7 @@
             Provides methods to interact with Kyc Spider Service
             </summary>
         </member>
-        <member name="M:Lykke.Service.KycSpider.Client.KycSpiderClient.#ctor(Lykke.Service.KycSpider.Client.AutorestClient.IKycSpiderAPI,System.String,Common.Log.ILog)">
+        <member name="M:Lykke.Service.KycSpider.Client.KycSpiderClient.#ctor(Lykke.Service.KycSpider.Client.AutorestClient.IKycSpiderAPI)">
             <summary>
             Initializes a new instance of the KycSpiderClient class.
             </summary>

@@ -3,6 +3,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Common.Log;
+using Lykke.Service.Kyc.Abstractions.Requests;
+using Lykke.Service.Kyc.Client;
 using Lykke.Service.KycSpider.Core.Domain.SpiderCheck;
 using Lykke.Service.KycSpider.Core.Domain.SpiderCheckInfo;
 using Lykke.Service.KycSpider.Core.Repositories;
@@ -22,7 +24,14 @@ namespace Lykke.Service.KycSpider.Services
         private readonly ITypedDocumentsService _typedDocumentsService;
         private readonly ISpiderCheckService _spiderCheckService;
         private readonly ISpiderCheckResultRepository _spiderCheckResultRepository;
+        private readonly IRequestableDocumentsServiceClient _requestableDocumentsService;
         private readonly ILog _log;
+
+        private const string NoSuspectedProfiles = "No suspected profiles";
+        private static readonly Changer SpiderChanger = new Changer
+        {
+            Name = "Spider"
+        };
 
         public SpiderInstantCheckService
         (
@@ -32,6 +41,7 @@ namespace Lykke.Service.KycSpider.Services
             ITypedDocumentsService typedDocumentsService,
             ISpiderCheckService spiderCheckService,
             ISpiderCheckResultRepository spiderCheckResultRepository,
+            IRequestableDocumentsServiceClient requestableDocumentsService,
             ILog log
         )
         {
@@ -41,6 +51,7 @@ namespace Lykke.Service.KycSpider.Services
             _typedDocumentsService = typedDocumentsService;
             _spiderCheckService = spiderCheckService;
             _spiderCheckResultRepository = spiderCheckResultRepository;
+            _requestableDocumentsService = requestableDocumentsService;
             _log = log;
         }
 
@@ -123,21 +134,26 @@ namespace Lykke.Service.KycSpider.Services
                 var diff = _diffService.ComputeDiffWithEmptyByPep(state.CheckResult);
                 var doc = state.Pep;
 
+                await _log.WriteInfoAsync(nameof(SpiderInstantCheckService), nameof(UpdateDocuments),
+                    $"Set status {doc.State} for DocumentId: {doc.DocumentId} for ClientId: {doc.CustomerId}");
+
+                doc.CheckDateTime = DateTime.UtcNow;
+                await _typedDocumentsService.AddOrUpdatePepCheckDocumentAsync(doc);
                 if (IsSuspectedDiff(diff))
                 {
-                    doc.State = DocumentStates.Uploaded;
+                    await _requestableDocumentsService.SubmitDocumentAsync(doc.CustomerId, doc.DocumentId, SpiderChanger);
                 }
                 else
                 {
-                    doc.State = DocumentStates.Approved;
-                    doc.CheckResultSatisfaction = true;
+                    await _requestableDocumentsService.ApproveDocumentAsync(doc.CustomerId, doc.DocumentId,
+                        new PepCheckDocumentApproveRequest
+                        {
+                            Changer = SpiderChanger,
+                            CheckResultComment = NoSuspectedProfiles,
+                            CheckResultSatisfaction = true
+                        });
                 }
 
-                doc.CheckDateTime = DateTime.UtcNow;
-
-                await _log.WriteInfoAsync(nameof(SpiderInstantCheckService), nameof(UpdateDocuments),
-                    $"Set status {doc.State} for DocumentId: {doc.DocumentId} for ClientId: {doc.CustomerId}");
-                await _typedDocumentsService.AddOrUpdatePepCheckDocumentAsync(doc);
                 await _spiderDocumentInfoRepository.AddOrUpdateAsync(FormSpiderDocumentInfo(currentResultId, diff, doc));
             }
 
@@ -146,20 +162,27 @@ namespace Lykke.Service.KycSpider.Services
                 var diff = _diffService.ComputeDiffWithEmptyByCrime(state.CheckResult);
                 var doc = state.Crime;
 
+
+                await _log.WriteInfoAsync(nameof(SpiderInstantCheckService), nameof(UpdateDocuments),
+                    $"Set status {doc.State} for DocumentId: {doc.DocumentId} for ClientId: {doc.CustomerId}");
+
+                doc.CheckDateTime = DateTime.UtcNow;
+                await _typedDocumentsService.AddOrUpdateCrimeCheckDocumentAsync(doc);
                 if (IsSuspectedDiff(diff))
                 {
-                    doc.State = DocumentStates.Uploaded;
+                    await _requestableDocumentsService.SubmitDocumentAsync(doc.CustomerId, doc.DocumentId, SpiderChanger);
                 }
                 else
                 {
-                    doc.State = DocumentStates.Approved;
-                    doc.CheckResultSatisfaction = true;
+                    await _requestableDocumentsService.ApproveDocumentAsync(doc.CustomerId, doc.DocumentId,
+                        new CrimeCheckDocumentApproveRequest
+                        {
+                            Changer = SpiderChanger,
+                            CheckResultComment = NoSuspectedProfiles,
+                            CheckResultSatisfaction = true
+                        });
                 }
 
-                doc.CheckDateTime = DateTime.UtcNow;
-                await _log.WriteInfoAsync(nameof(SpiderInstantCheckService), nameof(UpdateDocuments),
-                    $"Set status {doc.State} for DocumentId: {doc.DocumentId} for ClientId: {doc.CustomerId}");
-                await _typedDocumentsService.AddOrUpdateCrimeCheckDocumentAsync(doc);
                 await _spiderDocumentInfoRepository.AddOrUpdateAsync(FormSpiderDocumentInfo(currentResultId, diff, doc));
             }
 
@@ -168,20 +191,26 @@ namespace Lykke.Service.KycSpider.Services
                 var diff = _diffService.ComputeDiffWithEmptyBySanction(state.CheckResult);
                 var doc = state.Sanction;
 
+                await _log.WriteInfoAsync(nameof(SpiderInstantCheckService), nameof(UpdateDocuments),
+                    $"Set status {doc.State} for DocumentId: {doc.DocumentId} for ClientId: {doc.CustomerId}");
+
+                doc.CheckDateTime = DateTime.UtcNow;
+                await _typedDocumentsService.AddOrUpdateSanctionCheckDocumentAsync(doc);
                 if (IsSuspectedDiff(diff))
                 {
-                    doc.State = DocumentStates.Uploaded;
+                    await _requestableDocumentsService.SubmitDocumentAsync(doc.CustomerId, doc.DocumentId, SpiderChanger);
                 }
                 else
                 {
-                    doc.State = DocumentStates.Approved;
-                    doc.CheckResultSatisfaction = true;
+                    await _requestableDocumentsService.ApproveDocumentAsync(doc.CustomerId, doc.DocumentId,
+                        new SanctionCheckDocumentApproveRequest()
+                        {
+                            Changer = SpiderChanger,
+                            CheckResultComment = NoSuspectedProfiles,
+                            CheckResultSatisfaction = true
+                        });
                 }
 
-                doc.CheckDateTime = DateTime.UtcNow;
-                await _log.WriteInfoAsync(nameof(SpiderInstantCheckService), nameof(UpdateDocuments),
-                    $"Set status {doc.State} for DocumentId: {doc.DocumentId} for ClientId: {doc.CustomerId}");
-                await _typedDocumentsService.AddOrUpdateSanctionCheckDocumentAsync(doc);
                 await _spiderDocumentInfoRepository.AddOrUpdateAsync(FormSpiderDocumentInfo(currentResultId, diff, doc));
             }
         }

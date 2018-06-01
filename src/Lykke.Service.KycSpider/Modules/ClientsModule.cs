@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using Lykke.Service.Kyc.Client;
 using Lykke.Service.KycSpider.Settings;
 using Lykke.Service.PersonalData.Client;
 using Lykke.Service.PersonalData.Contract;
@@ -20,6 +21,9 @@ namespace Lykke.Service.KycSpider.Modules
             builder
                 .AddService<TypedDocumentsService, ITypedDocumentsService>(
                     TypedParameter.From(_settings.CurrentValue.PersonalDataServiceClient))
+
+                .AddService<RequestableDocumentsServiceClient, IRequestableDocumentsServiceClient>(
+                    TypedParameter.From(_settings.CurrentValue.KycServiceClient))
 
                 .AddService<PersonalDataService, IPersonalDataService>(
                     TypedParameter.From(_settings.CurrentValue.PersonalDataServiceClient));
