@@ -9,12 +9,10 @@ namespace Lykke.Service.KycSpider.Services
     public class VerifiableCustomerService : IVerifiableCustomerService
     {
         private readonly IVerifiableCustomerInfoRepository _repository;
-        private readonly IMapper _mapper;
 
-        public VerifiableCustomerService(IVerifiableCustomerInfoRepository repository, IMapper mapper)
+        public VerifiableCustomerService(IVerifiableCustomerInfoRepository repository)
         {
             _repository = repository;
-            _mapper = mapper;
         }
 
         public async Task<IVerifiableCustomerInfo> GetAsync(string clientId)
@@ -24,29 +22,17 @@ namespace Lykke.Service.KycSpider.Services
 
         public async Task<IVerifiableCustomerInfo> DisablePepCheck(string clientId)
         {
-            var doc = _mapper.Map<VerifiableCustomerInfo>(await _repository.GetAsync(clientId));
-
-            doc.IsPepCheckRequired = false;
-
-            return await _repository.AddOrUpdateAsync(doc);
+            return await _repository.UpdateCheckStatesAsync(clientId, pep: false);
         }
 
         public async Task<IVerifiableCustomerInfo> DisableCrimeCheck(string clientId)
         {
-            var doc = _mapper.Map<VerifiableCustomerInfo>(await _repository.GetAsync(clientId));
-
-            doc.IsCrimeCheckRequired = false;
-
-            return await _repository.AddOrUpdateAsync(doc);
+            return await _repository.UpdateCheckStatesAsync(clientId, crime: false);
         }
 
         public async Task<IVerifiableCustomerInfo> DisableSanctionCheck(string clientId)
         {
-            var doc = _mapper.Map<VerifiableCustomerInfo>(await _repository.GetAsync(clientId));
-
-            doc.IsSanctionCheckRequired = false;
-
-            return await _repository.AddOrUpdateAsync(doc);
+            return await _repository.UpdateCheckStatesAsync(clientId, sanction: false);
         }
     }
 }

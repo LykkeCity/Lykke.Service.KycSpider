@@ -91,13 +91,15 @@ namespace Lykke.Service.KycSpider.Services
 
                 var spiderCheckId = (await _verifiableCustomerRepository.GetAsync(clientId))?.LatestSpiderCheckId;
 
-                if (spiderCheckId != null)
+                if (spiderCheckId == null)
                 {
-                    state.CheckResult = await _spiderCheckResultRepository.GetAsync(clientId, spiderCheckId);
+                    state.CheckResult = await _spiderCheckService.CheckAsync(clientId);
+                    state.IsNewCustomer = true;
                 }
                 else
                 {
-                    state.CheckResult = await _spiderCheckService.CheckAsync(clientId);
+                    state.CheckResult = await _spiderCheckResultRepository.GetAsync(clientId, spiderCheckId);
+                    state.IsNewCustomer = false;
                 }
 
                 await UpdateDocuments(state);
@@ -110,19 +112,42 @@ namespace Lykke.Service.KycSpider.Services
         private async Task UpdateVerifiableCustomer(InstantCheckState state)
         {
             var clientId = state.CheckResult.CustomerId;
-            var oldClient = await _verifiableCustomerRepository.GetAsync(clientId) ??
-                            new VerifiableCustomerInfo { CustomerId = clientId };
+            var latestCheckId = state.CheckResult.ResultId;
+            var isPepCheckRequired = IsNotNull(state.Pep);
+            var isCrimeCheckRequired = IsNotNull(state.Crime);
+            var isSanctionCheckRequired = IsNotNull(state.Sanction);
 
-            var newClient = new VerifiableCustomerInfo
+            if (state.IsNewCustomer)
             {
-                CustomerId = oldClient.CustomerId,
-                IsCrimeCheckRequired = oldClient.IsCrimeCheckRequired || state.Crime != null,
-                IsSanctionCheckRequired = oldClient.IsSanctionCheckRequired || state.Sanction != null,
-                IsPepCheckRequired = oldClient.IsPepCheckRequired || state.Pep != null,
-                LatestSpiderCheckId = state.CheckResult.ResultId
-            };
+                await _verifiableCustomerRepository.AddAsync(new VerifiableCustomerInfo
+                {
+                    CustomerId = clientId,
+                    IsPepCheckRequired = isPepCheckRequired,
+                    IsCrimeCheckRequired = isCrimeCheckRequired,
+                    IsSanctionCheckRequired = isSanctionCheckRequired,
+                    LatestSpiderCheckId = latestCheckId
+                });
+            }
+            else
+            {
+                await _verifiableCustomerRepository.UpdateCheckStatesAsync
+                (
+                    clientId,
+                    pep: ToNullIfFalse(isPepCheckRequired),
+                    crime: ToNullIfFalse(isCrimeCheckRequired),
+                    sanction: ToNullIfFalse(isSanctionCheckRequired)
+                );
+            }
+        }
 
-            await _verifiableCustomerRepository.AddOrUpdateAsync(newClient);
+        private static bool IsNotNull(object reference)
+        {
+            return reference != null;
+        }
+
+        private static bool? ToNullIfFalse(bool value)
+        {
+            return value ? true : null as bool?;
         }
 
         private async Task UpdateDocuments(InstantCheckState state)
@@ -234,6 +259,7 @@ namespace Lykke.Service.KycSpider.Services
             public PepCheckDocument Pep { get; set; }
             public CrimeCheckDocument Crime { get; set; }
             public SanctionCheckDocument Sanction { get; set; }
+            public bool IsNewCustomer { get; set; }
         }
 
     }

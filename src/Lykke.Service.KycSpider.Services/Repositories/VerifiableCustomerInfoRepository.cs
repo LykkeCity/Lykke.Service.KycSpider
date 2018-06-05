@@ -16,11 +16,25 @@ namespace Lykke.Service.KycSpider.Services.Repositories
             _tableStorage = tableStorage;
         }
 
-        public async Task<IVerifiableCustomerInfo> AddOrUpdateAsync(IVerifiableCustomerInfo entity)
+        public async Task<IVerifiableCustomerInfo> AddAsync(IVerifiableCustomerInfo entity)
         {
             var newEntity = VerifiableCustomerInfoEntity.Create(entity);
-            await _tableStorage.InsertOrReplaceAsync(newEntity);
+            await _tableStorage.InsertAsync(newEntity);
             return newEntity;
+        }
+
+        public async Task<IVerifiableCustomerInfo> UpdateCheckStatesAsync(string clientId, bool? pep = null, bool? crime = null, bool? sanction = null)
+        {
+            var entity = VerifiableCustomerInfoEntity.Create(clientId, pep, crime, sanction);
+            await _tableStorage.InsertOrMergeAsync(entity);
+            return entity;
+        }
+
+        public async Task<IVerifiableCustomerInfo> UpdateSpiderCheckIdAsync(string clientId, string spiderCheckId)
+        {
+            var entity = VerifiableCustomerInfoEntity.Create(clientId, spiderCheckId);
+            await _tableStorage.InsertOrMergeAsync(entity);
+            return entity;
         }
 
         public async Task<IVerifiableCustomerInfo> GetAsync(string clientId)
