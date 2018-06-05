@@ -137,8 +137,6 @@ namespace Lykke.Service.KycSpider.Services
                 await _log.WriteInfoAsync(nameof(SpiderInstantCheckService), nameof(UpdateDocuments),
                     $"Set status {doc.State} for DocumentId: {doc.DocumentId} for ClientId: {doc.CustomerId}");
 
-                doc.CheckDateTime = DateTime.UtcNow;
-                await _typedDocumentsService.AddOrUpdatePepCheckDocumentAsync(doc);
                 if (IsSuspectedDiff(diff))
                 {
                     await _requestableDocumentsService.SubmitDocumentAsync(doc.CustomerId, doc.DocumentId, SpiderChanger);
@@ -166,8 +164,6 @@ namespace Lykke.Service.KycSpider.Services
                 await _log.WriteInfoAsync(nameof(SpiderInstantCheckService), nameof(UpdateDocuments),
                     $"Set status {doc.State} for DocumentId: {doc.DocumentId} for ClientId: {doc.CustomerId}");
 
-                doc.CheckDateTime = DateTime.UtcNow;
-                await _typedDocumentsService.AddOrUpdateCrimeCheckDocumentAsync(doc);
                 if (IsSuspectedDiff(diff))
                 {
                     await _requestableDocumentsService.SubmitDocumentAsync(doc.CustomerId, doc.DocumentId, SpiderChanger);

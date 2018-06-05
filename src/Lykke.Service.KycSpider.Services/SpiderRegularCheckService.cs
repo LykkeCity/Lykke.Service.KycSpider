@@ -11,8 +11,6 @@ using Lykke.Service.KycSpider.Core.Domain.SpiderCheck;
 using Lykke.Service.KycSpider.Core.Domain.SpiderCheckInfo;
 using Lykke.Service.KycSpider.Core.Repositories;
 using Lykke.Service.KycSpider.Core.Services;
-using Lykke.Service.PersonalData.Client.Models;
-using Lykke.Service.PersonalData.Client.Models.Documents;
 using Lykke.Service.PersonalData.Contract;
 using Lykke.Service.PersonalData.Contract.Models.Documents;
 
@@ -134,18 +132,11 @@ namespace Lykke.Service.KycSpider.Services
 
                 if (IsSuspectedDiff(diff))
                 {
-                    var emptyDoc = await _requestableDocumentsService.RequestDocumentFromOfficerAsync(
+                    var doc = await _requestableDocumentsService.RequestDocumentFromOfficerAsync(
                         request.Customer.CustomerId,
                         DocumentTypes.PepCheckDocument,
                         SpiderChanger);
 
-                    var doc = await _typedDocumentsService.AddOrUpdatePepCheckDocumentAsync(new PepCheckDocument
-                    {
-                        DocumentId = emptyDoc.DocumentId,
-                        CustomerId = emptyDoc.CustomerId,
-                        CheckDateTime = DateTime.UtcNow,
-                        State = DocumentStates.Uploaded
-                    });
                     await _log.WriteInfoAsync(nameof(SpiderRegularCheckService), nameof(SaveDocuments),
                         $"Client {doc.CustomerId} is suspected for pep created new document (DocumentId: {doc.DocumentId})");
                     await _spiderDocumentInfoRepository.AddOrUpdateAsync(FormSpiderDocumentInfo(request, diff, doc));
@@ -163,18 +154,11 @@ namespace Lykke.Service.KycSpider.Services
 
                 if (IsSuspectedDiff(diff))
                 {
-                    var emptyDoc = await _requestableDocumentsService.RequestDocumentFromOfficerAsync(
+                    var doc = await _requestableDocumentsService.RequestDocumentFromOfficerAsync(
                         request.Customer.CustomerId,
                         DocumentTypes.CrimeCheckDocument,
                         SpiderChanger);
 
-                    var doc = await _typedDocumentsService.AddOrUpdateCrimeCheckDocumentAsync(new CrimeCheckDocument
-                    {
-                        DocumentId = emptyDoc.DocumentId,
-                        CustomerId = emptyDoc.CustomerId,
-                        CheckDateTime = DateTime.UtcNow,
-                        State = DocumentStates.Uploaded
-                    });
                     await _log.WriteInfoAsync(nameof(SpiderRegularCheckService), nameof(SaveDocuments),
                         $"Client {doc.CustomerId} is suspected for crime created new document (DocumentId: {doc.DocumentId})");
                     await _spiderDocumentInfoRepository.AddOrUpdateAsync(FormSpiderDocumentInfo(request, diff, doc));
@@ -192,18 +176,11 @@ namespace Lykke.Service.KycSpider.Services
 
                 if (IsSuspectedDiff(diff))
                 {
-                    var emptyDoc = await _requestableDocumentsService.RequestDocumentFromOfficerAsync(
+                    var doc = await _requestableDocumentsService.RequestDocumentFromOfficerAsync(
                         request.Customer.CustomerId,
                         DocumentTypes.SanctionCheckDocument,
                         SpiderChanger);
 
-                    var doc = await _typedDocumentsService.AddOrUpdateSanctionCheckDocumentAsync(new SanctionCheckDocument
-                    {
-                        DocumentId = emptyDoc.DocumentId,
-                        CustomerId = emptyDoc.CustomerId,
-                        CheckDateTime = DateTime.UtcNow,
-                        State = DocumentStates.Uploaded
-                    });
                     await _log.WriteInfoAsync(nameof(SpiderRegularCheckService), nameof(SaveDocuments),
                         $"Client {doc.CustomerId} is suspected for sanction created new document (DocumentId: {doc.DocumentId})");
                     await _spiderDocumentInfoRepository.AddOrUpdateAsync(FormSpiderDocumentInfo(request, diff, doc));
