@@ -207,11 +207,11 @@ namespace Lykke.Service.KycSpider.Services
                     break;
                 case DocumentTypes.CrimeCheckDocument:
                     await _requestableDocumentsService.ApproveDocumentAsync(doc.CustomerId, doc.DocumentId,
-                        Mapper.Map<PepCheckDocumentApproveRequest>(NotSuspectedApproveRequest));
+                        Mapper.Map<CrimeCheckDocumentApproveRequest>(NotSuspectedApproveRequest));
                     break;
                 case DocumentTypes.SanctionCheckDocument:
                     await _requestableDocumentsService.ApproveDocumentAsync(doc.CustomerId, doc.DocumentId,
-                        Mapper.Map<PepCheckDocumentApproveRequest>(NotSuspectedApproveRequest));
+                        Mapper.Map<SanctionCheckDocumentApproveRequest>(NotSuspectedApproveRequest));
                     break;
                 default:
                     throw new InvalidOperationException();
