@@ -27,11 +27,18 @@ namespace Lykke.Service.KycSpider.Services
         private readonly IRequestableDocumentsServiceClient _requestableDocumentsService;
         private readonly ILog _log;
 
-        private const string NoSuspectedProfiles = "No suspected profiles";
         private static readonly Changer SpiderChanger = new Changer
         {
             Name = "Spider"
         };
+
+        private static readonly SpiderCheckDocumentApproveRequest NotSuspectedApproveRequest =
+            new SpiderCheckDocumentApproveRequest
+            {
+                Changer = SpiderChanger,
+                CheckResultComment = "No suspected profiles",
+                CheckResultSatisfaction = true
+            };
 
         public SpiderInstantCheckService
         (
@@ -158,82 +165,63 @@ namespace Lykke.Service.KycSpider.Services
             {
                 var diff = _diffService.ComputeDiffWithEmptyByPep(state.CheckResult);
                 var doc = state.Pep;
-
-                await _log.WriteInfoAsync(nameof(SpiderInstantCheckService), nameof(UpdateDocuments),
-                    $"Set status {doc.State} for DocumentId: {doc.DocumentId} for ClientId: {doc.CustomerId}");
-
-                if (IsSuspectedDiff(diff))
-                {
-                    await _requestableDocumentsService.SubmitDocumentAsync(doc.CustomerId, doc.DocumentId, SpiderChanger);
-                }
-                else
-                {
-                    await _requestableDocumentsService.ApproveDocumentAsync(doc.CustomerId, doc.DocumentId,
-                        new PepCheckDocumentApproveRequest
-                        {
-                            Changer = SpiderChanger,
-                            CheckResultComment = NoSuspectedProfiles,
-                            CheckResultSatisfaction = true
-                        });
-                }
-
-                await _spiderDocumentInfoRepository.AddOrUpdateAsync(FormSpiderDocumentInfo(currentResultId, diff, doc));
+                await UpdateDocument(diff, doc, currentResultId);
             }
 
             if (state.Crime != null)
             {
                 var diff = _diffService.ComputeDiffWithEmptyByCrime(state.CheckResult);
                 var doc = state.Crime;
-
-
-                await _log.WriteInfoAsync(nameof(SpiderInstantCheckService), nameof(UpdateDocuments),
-                    $"Set status {doc.State} for DocumentId: {doc.DocumentId} for ClientId: {doc.CustomerId}");
-
-                if (IsSuspectedDiff(diff))
-                {
-                    await _requestableDocumentsService.SubmitDocumentAsync(doc.CustomerId, doc.DocumentId, SpiderChanger);
-                }
-                else
-                {
-                    await _requestableDocumentsService.ApproveDocumentAsync(doc.CustomerId, doc.DocumentId,
-                        new CrimeCheckDocumentApproveRequest
-                        {
-                            Changer = SpiderChanger,
-                            CheckResultComment = NoSuspectedProfiles,
-                            CheckResultSatisfaction = true
-                        });
-                }
-
-                await _spiderDocumentInfoRepository.AddOrUpdateAsync(FormSpiderDocumentInfo(currentResultId, diff, doc));
+                await UpdateDocument(diff, doc, currentResultId);
             }
 
             if (state.Sanction != null)
             {
                 var diff = _diffService.ComputeDiffWithEmptyBySanction(state.CheckResult);
                 var doc = state.Sanction;
-
-                await _log.WriteInfoAsync(nameof(SpiderInstantCheckService), nameof(UpdateDocuments),
-                    $"Set status {doc.State} for DocumentId: {doc.DocumentId} for ClientId: {doc.CustomerId}");
-
-                doc.CheckDateTime = DateTime.UtcNow;
-                await _typedDocumentsService.AddOrUpdateSanctionCheckDocumentAsync(doc);
-                if (IsSuspectedDiff(diff))
-                {
-                    await _requestableDocumentsService.SubmitDocumentAsync(doc.CustomerId, doc.DocumentId, SpiderChanger);
-                }
-                else
-                {
-                    await _requestableDocumentsService.ApproveDocumentAsync(doc.CustomerId, doc.DocumentId,
-                        new SanctionCheckDocumentApproveRequest()
-                        {
-                            Changer = SpiderChanger,
-                            CheckResultComment = NoSuspectedProfiles,
-                            CheckResultSatisfaction = true
-                        });
-                }
-
-                await _spiderDocumentInfoRepository.AddOrUpdateAsync(FormSpiderDocumentInfo(currentResultId, diff, doc));
+                await UpdateDocument(diff, doc, currentResultId);
             }
+        }
+
+        private async Task UpdateDocument(ISpiderCheckResultDiff diff, IKycDocumentInfo document, string currentResultId)
+        {
+            await LogStateSetting(document, DocumentStates.Uploaded);
+            var submittedDocument = await _requestableDocumentsService.SubmitDocumentAsync(document.CustomerId, document.DocumentId, SpiderChanger);
+
+            if (!IsSuspectedDiff(diff))
+            {
+                await LogStateSetting(submittedDocument, DocumentStates.Approved);
+                await ApproveAsNotSuspected(submittedDocument);
+            }
+
+            await _spiderDocumentInfoRepository.AddOrUpdateAsync(FormSpiderDocumentInfo(currentResultId, diff, submittedDocument));
+        }
+
+        private async Task ApproveAsNotSuspected(IKycDocumentInfo doc)
+        {
+            switch (doc.Type)
+            {
+                case DocumentTypes.PepCheckDocument:
+                    await _requestableDocumentsService.ApproveDocumentAsync(doc.CustomerId, doc.DocumentId,
+                        Mapper.Map<PepCheckDocumentApproveRequest>(NotSuspectedApproveRequest));
+                    break;
+                case DocumentTypes.CrimeCheckDocument:
+                    await _requestableDocumentsService.ApproveDocumentAsync(doc.CustomerId, doc.DocumentId,
+                        Mapper.Map<PepCheckDocumentApproveRequest>(NotSuspectedApproveRequest));
+                    break;
+                case DocumentTypes.SanctionCheckDocument:
+                    await _requestableDocumentsService.ApproveDocumentAsync(doc.CustomerId, doc.DocumentId,
+                        Mapper.Map<PepCheckDocumentApproveRequest>(NotSuspectedApproveRequest));
+                    break;
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
+        private async Task LogStateSetting(IKycDocumentInfo doc, string newState)
+        {
+            await _log.WriteInfoAsync(nameof(SpiderInstantCheckService), nameof(UpdateDocuments),
+                $"Setting state from {doc.State} to {newState} for DocumentId: {doc.DocumentId} for ClientId: {doc.CustomerId}");
         }
 
         private static ISpiderDocumentInfo FormSpiderDocumentInfo(string currentCheckId, ISpiderCheckResultDiff diff, IKycDocumentInfo doc)
@@ -262,5 +250,11 @@ namespace Lykke.Service.KycSpider.Services
             public bool IsNewCustomer { get; set; }
         }
 
+        public class SpiderCheckDocumentApproveRequest
+        {
+            public string CheckResultComment { get; set; }
+            public bool CheckResultSatisfaction { get; set; }
+            public Changer Changer { get; set; }
+        }
     }
 }
