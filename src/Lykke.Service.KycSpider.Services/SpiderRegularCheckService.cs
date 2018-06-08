@@ -4,15 +4,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Common.Log;
+using Lykke.Service.Kyc.Abstractions.Domain.KycDocuments.Contract;
 using Lykke.Service.Kyc.Abstractions.Requests;
-using Lykke.Service.Kyc.Client;
+using Lykke.Service.Kyc.Abstractions.Services;
 using Lykke.Service.KycSpider.Core.Domain.PersonDiff;
 using Lykke.Service.KycSpider.Core.Domain.SpiderCheck;
 using Lykke.Service.KycSpider.Core.Domain.SpiderCheckInfo;
 using Lykke.Service.KycSpider.Core.Repositories;
 using Lykke.Service.KycSpider.Core.Services;
-using Lykke.Service.PersonalData.Contract;
-using Lykke.Service.PersonalData.Contract.Models.Documents;
 
 namespace Lykke.Service.KycSpider.Services
 {
@@ -22,10 +21,9 @@ namespace Lykke.Service.KycSpider.Services
         private readonly ICheckPersonResultDiffService _diffService;
         private readonly ISpiderDocumentInfoRepository _spiderDocumentInfoRepository;
         private readonly IVerifiableCustomerInfoRepository _verifiableCustomerRepository;
-        private readonly ITypedDocumentsService _typedDocumentsService;
         private readonly ISpiderCheckService _spiderCheckService;
         private readonly ISpiderCheckResultRepository _spiderCheckResultRepository;
-        private readonly IRequestableDocumentsServiceClient _requestableDocumentsService;
+        private readonly IRequestableDocumentsService _requestableDocumentsService;
         private readonly ILog _log;
 
         private static readonly Changer SpiderChanger = new Changer
@@ -39,10 +37,9 @@ namespace Lykke.Service.KycSpider.Services
             ICheckPersonResultDiffService diffService,
             ISpiderDocumentInfoRepository spiderDocumentInfoRepository,
             IVerifiableCustomerInfoRepository verifiableCustomerRepository,
-            ITypedDocumentsService typedDocumentsService,
             ISpiderCheckService spiderCheckService,
             ISpiderCheckResultRepository spiderCheckResultRepository,
-            IRequestableDocumentsServiceClient requestableDocumentsService,
+            IRequestableDocumentsService requestableDocumentsService,
             ILog log
         )
         {
@@ -50,7 +47,6 @@ namespace Lykke.Service.KycSpider.Services
             _diffService = diffService;
             _spiderDocumentInfoRepository = spiderDocumentInfoRepository;
             _verifiableCustomerRepository = verifiableCustomerRepository;
-            _typedDocumentsService = typedDocumentsService;
             _spiderCheckService = spiderCheckService;
             _spiderCheckResultRepository = spiderCheckResultRepository;
             _requestableDocumentsService = requestableDocumentsService;

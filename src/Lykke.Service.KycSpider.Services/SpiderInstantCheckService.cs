@@ -3,16 +3,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Common.Log;
+using Lykke.Service.Kyc.Abstractions.Domain.KycDocuments.Contract;
 using Lykke.Service.Kyc.Abstractions.Requests;
-using Lykke.Service.Kyc.Client;
+using Lykke.Service.Kyc.Abstractions.Services;
 using Lykke.Service.KycSpider.Core.Domain.SpiderCheck;
 using Lykke.Service.KycSpider.Core.Domain.SpiderCheckInfo;
 using Lykke.Service.KycSpider.Core.Repositories;
 using Lykke.Service.KycSpider.Core.Services;
 using Lykke.Service.PersonalData.Client.Models;
-using Lykke.Service.PersonalData.Client.Models.Documents;
-using Lykke.Service.PersonalData.Contract;
-using Lykke.Service.PersonalData.Contract.Models.Documents;
 
 namespace Lykke.Service.KycSpider.Services
 {
@@ -21,10 +19,9 @@ namespace Lykke.Service.KycSpider.Services
         private readonly ICheckPersonResultDiffService _diffService;
         private readonly ISpiderDocumentInfoRepository _spiderDocumentInfoRepository;
         private readonly IVerifiableCustomerInfoRepository _verifiableCustomerRepository;
-        private readonly ITypedDocumentsService _typedDocumentsService;
         private readonly ISpiderCheckService _spiderCheckService;
         private readonly ISpiderCheckResultRepository _spiderCheckResultRepository;
-        private readonly IRequestableDocumentsServiceClient _requestableDocumentsService;
+        private readonly IRequestableDocumentsService _requestableDocumentsService;
         private readonly ILog _log;
 
         private static readonly Changer SpiderChanger = new Changer
@@ -45,17 +42,15 @@ namespace Lykke.Service.KycSpider.Services
             ICheckPersonResultDiffService diffService,
             ISpiderDocumentInfoRepository spiderDocumentInfoRepository,
             IVerifiableCustomerInfoRepository verifiableCustomerRepository,
-            ITypedDocumentsService typedDocumentsService,
             ISpiderCheckService spiderCheckService,
             ISpiderCheckResultRepository spiderCheckResultRepository,
-            IRequestableDocumentsServiceClient requestableDocumentsService,
+            IRequestableDocumentsService requestableDocumentsService,
             ILog log
         )
         {
             _diffService = diffService;
             _spiderDocumentInfoRepository = spiderDocumentInfoRepository;
             _verifiableCustomerRepository = verifiableCustomerRepository;
-            _typedDocumentsService = typedDocumentsService;
             _spiderCheckService = spiderCheckService;
             _spiderCheckResultRepository = spiderCheckResultRepository;
             _requestableDocumentsService = requestableDocumentsService;
@@ -66,9 +61,9 @@ namespace Lykke.Service.KycSpider.Services
         {
             await _log.WriteInfoAsync(nameof(SpiderInstantCheckService), nameof(PerformInstantCheckAsync), "started");
 
-            var pepDocs = await _typedDocumentsService.GetAllPepCheckDocumentsByStateAsync(DocumentStates.Draft, null, null);
-            var crimeDocs = await _typedDocumentsService.GetAllCrimeCheckDocumentsByStateAsync(DocumentStates.Draft, null, null);
-            var sanctionDocs = await _typedDocumentsService.GetAllSanctionCheckDocumentsByStateAsync(DocumentStates.Draft, null, null);
+            var pepDocs = await _requestableDocumentsService.GetDocumentQueue(DocumentTypes.PepCheckDocument, DocumentStates.Draft);
+            var crimeDocs = await _requestableDocumentsService.GetDocumentQueue(DocumentTypes.CrimeCheckDocument, DocumentStates.Draft);
+            var sanctionDocs = await _requestableDocumentsService.GetDocumentQueue(DocumentTypes.SanctionCheckDocument, DocumentStates.Draft);
 
             var clientDict = pepDocs
                 .Select(x => x.CustomerId)
@@ -244,9 +239,9 @@ namespace Lykke.Service.KycSpider.Services
         private class InstantCheckState
         {
             public ISpiderCheckResult CheckResult { get; set; }
-            public PepCheckDocument Pep { get; set; }
-            public CrimeCheckDocument Crime { get; set; }
-            public SanctionCheckDocument Sanction { get; set; }
+            public IKycDocumentInfo Pep { get; set; }
+            public IKycDocumentInfo Crime { get; set; }
+            public IKycDocumentInfo Sanction { get; set; }
             public bool IsNewCustomer { get; set; }
         }
 

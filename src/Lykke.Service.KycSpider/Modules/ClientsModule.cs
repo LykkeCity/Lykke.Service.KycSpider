@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using Lykke.Service.Kyc.Abstractions.Services;
 using Lykke.Service.Kyc.Client;
 using Lykke.Service.KycSpider.Settings;
 using Lykke.Service.PersonalData.Client;
@@ -19,10 +20,8 @@ namespace Lykke.Service.KycSpider.Modules
         protected override void Load(ContainerBuilder builder)
         {
             builder
-                .AddService<TypedDocumentsService, ITypedDocumentsService>(
-                    TypedParameter.From(_settings.CurrentValue.PersonalDataServiceClient))
 
-                .AddService<RequestableDocumentsServiceClient, IRequestableDocumentsServiceClient>(
+                .AddService<RequestableDocumentsServiceClient, IRequestableDocumentsService>(
                     TypedParameter.From(_settings.CurrentValue.KycServiceClient))
 
                 .AddService<PersonalDataService, IPersonalDataService>(
