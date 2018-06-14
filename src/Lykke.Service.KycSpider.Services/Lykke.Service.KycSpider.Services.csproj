@@ -8,11 +8,21 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Lykke.Common" Version="6.4.0" />
+    <PackageReference Include="AutoMapper" Version="6.2.2" />
+    <PackageReference Include="Lykke.AzureStorage" Version="8.4.1" />
+    <PackageReference Include="Lykke.Service.Kyc.Client" Version="1.0.232" />
+    <PackageReference Include="System.ServiceModel.Duplex" Version="4.4.*" />
+    <PackageReference Include="System.ServiceModel.Http" Version="4.4.*" />
+    <PackageReference Include="System.ServiceModel.NetTcp" Version="4.4.*" />
+    <PackageReference Include="System.ServiceModel.Security" Version="4.4.*" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Lykke.Service.KycSpider.Core\Lykke.Service.KycSpider.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services" />
   </ItemGroup>
 
 </Project>

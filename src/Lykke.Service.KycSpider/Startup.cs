@@ -2,8 +2,12 @@
 using System.Threading.Tasks;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using AutoMapper;
 using AzureStorage.Tables;
 using Common.Log;
+using Lykke.AzureStorage.Tables.Entity.Metamodel;
+using Lykke.AzureStorage.Tables.Entity.Metamodel.Providers;
+using Lykke.AzureStorage.Tables.Entity.ValueTypesMerging;
 using Lykke.Common.ApiLibrary.Middleware;
 using Lykke.Common.ApiLibrary.Swagger;
 using Lykke.Logs;
@@ -34,6 +38,17 @@ namespace Lykke.Service.KycSpider
             Configuration = builder.Build();
 
             Environment = env;
+
+            var conventionProvider = new ConventionBasedMetamodelProvider()
+                .AddTypeValueTypesMergingStrategyRule(
+                    t => true,
+                    ValueTypeMergingStrategy.UpdateAlways);
+
+            var provider = new CompositeMetamodelProvider()
+                .AddProvider(new AnnotationsBasedMetamodelProvider())
+                .AddProvider(conventionProvider);
+
+            EntityMetamodel.Configure(provider);
         }
 
         public IServiceProvider ConfigureServices(IServiceCollection services)
@@ -57,7 +72,11 @@ namespace Lykke.Service.KycSpider
 
                 Log = CreateLogWithSlack(services, appSettings);
 
+                Mapper.Initialize(x=> x.AddProfile(new AutoMapperProfile()));
+                builder.RegisterInstance(Mapper.Instance);
+
                 builder.RegisterModule(new ServiceModule(appSettings.Nested(x => x.KycSpiderService), Log));
+                builder.RegisterModule(new ClientsModule(appSettings));
                 builder.Populate(services);
                 ApplicationContainer = builder.Build();
 
@@ -70,7 +89,7 @@ namespace Lykke.Service.KycSpider
             }
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime)
+       public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime)
         {
             try
             {
