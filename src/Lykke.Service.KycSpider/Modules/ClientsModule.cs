@@ -24,6 +24,9 @@ namespace Lykke.Service.KycSpider.Modules
                 .AddService<RequestableDocumentsServiceClient, IRequestableDocumentsService>(
                     TypedParameter.From(_settings.CurrentValue.KycServiceClient))
 
+                .AddService<DocumentsQueueReaderServiceClient, IDocumentsQueueReaderService>(
+                    TypedParameter.From(_settings.CurrentValue.KycServiceClient))
+
                 .AddService<PersonalDataService, IPersonalDataService>(
                     TypedParameter.From(_settings.CurrentValue.PersonalDataServiceClient));
 

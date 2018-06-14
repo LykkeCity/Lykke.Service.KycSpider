@@ -4,6 +4,9 @@ using Autofac.Extensions.DependencyInjection;
 using AzureStorage;
 using AzureStorage.Tables;
 using Common.Log;
+
+using Lykke.Service.Kyc.Abstractions.Services;
+using Lykke.Service.Kyc.Client;
 using Lykke.Service.KycSpider.Core.Repositories;
 using Lykke.Service.KycSpider.Core.Services;
 using Lykke.Service.KycSpider.PeriodicalHandlers;
@@ -81,7 +84,7 @@ namespace Lykke.Service.KycSpider.Modules
         private INoSQLTableStorage<T> CreateAzureTableStorage<T>(Func<KycSpiderSettings, AzureTableSettings> expr) where T : class, ITableEntity, new()
         {
             var settings = _settings.Nested(expr);
-            
+
             return AzureTableStorage<T>.Create(settings.Nested(x => x.ConnectionString),
                 settings.CurrentValue.TableName, _log);
         }

@@ -22,6 +22,7 @@ namespace Lykke.Service.KycSpider.Services
         private readonly ISpiderCheckService _spiderCheckService;
         private readonly ISpiderCheckResultRepository _spiderCheckResultRepository;
         private readonly IRequestableDocumentsService _requestableDocumentsService;
+        private readonly IDocumentsQueueReaderService _documentsQueue;
         private readonly ILog _log;
 
         private static readonly Changer SpiderChanger = new Changer
@@ -45,6 +46,7 @@ namespace Lykke.Service.KycSpider.Services
             ISpiderCheckService spiderCheckService,
             ISpiderCheckResultRepository spiderCheckResultRepository,
             IRequestableDocumentsService requestableDocumentsService,
+            IDocumentsQueueReaderService documentsQueue,
             ILog log
         )
         {
@@ -54,6 +56,7 @@ namespace Lykke.Service.KycSpider.Services
             _spiderCheckService = spiderCheckService;
             _spiderCheckResultRepository = spiderCheckResultRepository;
             _requestableDocumentsService = requestableDocumentsService;
+            _documentsQueue = documentsQueue;
             _log = log;
         }
 
@@ -61,9 +64,9 @@ namespace Lykke.Service.KycSpider.Services
         {
             await _log.WriteInfoAsync(nameof(SpiderInstantCheckService), nameof(PerformInstantCheckAsync), "started");
 
-            var pepDocs = await _requestableDocumentsService.GetDocumentQueue(DocumentTypes.PepCheckDocument, DocumentStates.Draft);
-            var crimeDocs = await _requestableDocumentsService.GetDocumentQueue(DocumentTypes.CrimeCheckDocument, DocumentStates.Draft);
-            var sanctionDocs = await _requestableDocumentsService.GetDocumentQueue(DocumentTypes.SanctionCheckDocument, DocumentStates.Draft);
+            var pepDocs = await _documentsQueue.GetDocumentsAsync(DocumentTypes.PepCheckDocument, DocumentStates.Draft);
+            var crimeDocs = await _documentsQueue.GetDocumentsAsync(DocumentTypes.CrimeCheckDocument, DocumentStates.Draft);
+            var sanctionDocs = await _documentsQueue.GetDocumentsAsync(DocumentTypes.SanctionCheckDocument, DocumentStates.Draft);
 
             var clientDict = pepDocs
                 .Select(x => x.CustomerId)
