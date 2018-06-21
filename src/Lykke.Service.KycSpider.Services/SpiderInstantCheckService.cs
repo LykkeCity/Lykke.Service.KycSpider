@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Common.Log;
+using Lykke.Service.Kyc.Abstractions.Domain.Documents;
 using Lykke.Service.Kyc.Abstractions.Domain.KycDocuments.Contract;
 using Lykke.Service.Kyc.Abstractions.Requests;
 using Lykke.Service.Kyc.Abstractions.Services;
