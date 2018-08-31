@@ -4,38 +4,28 @@ using Autofac.Extensions.DependencyInjection;
 using AzureStorage;
 using AzureStorage.Tables;
 using Common.Log;
-
-using Lykke.Service.Kyc.Abstractions.Services;
-using Lykke.Service.Kyc.Client;
 using Lykke.Service.KycSpider.Core.Repositories;
 using Lykke.Service.KycSpider.Core.Services;
 using Lykke.Service.KycSpider.PeriodicalHandlers;
-using Lykke.Service.KycSpider.Settings.ServiceSettings;
 using Lykke.Service.KycSpider.Services;
 using Lykke.Service.KycSpider.Services.Repositories;
 using Lykke.Service.KycSpider.Settings;
 using Lykke.SettingsReader;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Lykke.Service.KycSpider.Modules
 {
     public class ServiceModule : Module
     {
-        private readonly IReloadingManager<AppSettings> _appSettings;
         private readonly IReloadingManager<KycSpiderSettings> _settings;
 
         public ServiceModule(IReloadingManager<AppSettings> appSettings)
         {
-            _appSettings = appSettings;
+            _settings = appSettings.Nested(x => x.KycSpiderService);
         }
 
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterInstance(_log)
-                .As<ILog>()
-                .SingleInstance();
-
             builder.RegisterType<HealthService>()
                 .As<IHealthService>()
                 .SingleInstance();
@@ -59,29 +49,20 @@ namespace Lykke.Service.KycSpider.Modules
                 .AddService<SpiderCheckManagerService, ISpiderCheckManagerService>(
                     TypedParameter.From(_settings.CurrentValue.SpiderCheckSettings))
 
-                .AddService<GlobalCheckInfoRepository, IGlobalCheckInfoRepository>(
-                    TypedParameter.From(CreateAzureTableStorage<GlobalCheckInfoEntity>(x => x.GlobalCheckInfoConnection)))
 
-                .AddService<SpiderDocumentInfoRepository, ISpiderDocumentInfoRepository>(
-                    TypedParameter.From(CreateAzureTableStorage<SpiderDocumentInfoEntity>(x => x.SpiderDocumentInfoConnection)))
+                .AddNoSQLTableStorage<SpiderCheckResultEntity>(_settings.Nested(x => x.Db.SpiderCheckResultsConnection))
+                .AddNoSQLTableStorage<GlobalCheckInfoEntity>(_settings.Nested(x => x.Db.GlobalCheckInfoConnection))
+                .AddNoSQLTableStorage<SpiderDocumentInfoEntity>(_settings.Nested(x => x.Db.SpiderDocumentInfoConnection))
+                .AddNoSQLTableStorage<VerifiableCustomerInfoEntity>(_settings.Nested(x => x.Db.VerifiableCustomerInfoConnection))
 
-                .AddService<VerifiableCustomerInfoRepository, IVerifiableCustomerInfoRepository>(
-                    TypedParameter.From(CreateAzureTableStorage<VerifiableCustomerInfoEntity>(x => x.VerifiableCustomerInfoConnection)))
+                .AddService<GlobalCheckInfoRepository, IGlobalCheckInfoRepository>()
+                .AddService<SpiderDocumentInfoRepository, ISpiderDocumentInfoRepository>()
+               .AddService<VerifiableCustomerInfoRepository, IVerifiableCustomerInfoRepository>()
+                .AddService<SpiderCheckResultRepository, ISpiderCheckResultRepository>()
 
-                .AddService<SpiderCheckResultRepository, ISpiderCheckResultRepository>(
-                    TypedParameter.From(CreateAzureTableStorage<SpiderCheckResultEntity>(x => x.SpiderCheckResultsConnection)))
-
+                
+            
                 .ApplyConfig(RegisterPeriodicalHandlers);
-
-            builder.Populate(_services);
-        }
-
-        private INoSQLTableStorage<T> CreateAzureTableStorage<T>(Func<KycSpiderSettings, AzureTableSettings> expr) where T : class, ITableEntity, new()
-        {
-            var settings = _settings.Nested(expr);
-
-            return AzureTableStorage<T>.Create(settings.Nested(x => x.ConnectionString),
-                settings.CurrentValue.TableName, _log);
         }
 
         private void RegisterPeriodicalHandlers(ContainerBuilder builder)
