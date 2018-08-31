@@ -1,11 +1,11 @@
 ﻿using JetBrains.Annotations;
-using Lykke.Sdk.Settings;
+using Lykke.SettingsReader.Attributes;
 
 namespace Lykke.Service.KycSpider.Settings
 {
     [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
-    public class AppSettings : BaseAppSettings
+    public class KycSpiderSettings
     {
-        public KycSpiderSettings KycSpiderService { get; set; }
+        public DbSettings Db { get; set; }
     }
 }

@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Version>1.0.1</Version>
@@ -14,23 +13,21 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>Lykke</PackageTags>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Lykke.Common" Version="6.8.5" />
-    <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.11" />
+    <None Remove="Lykke.Service.KycSpider.Client.xml" />
   </ItemGroup>
-
   <ItemGroup>
-    <Folder Include="AutorestClient\" />
+    <PackageReference Include="Lykke.HttpClientGenerator" Version="2.1.0" />
+    <PackageReference Include="Lykke.SettingsReader" Version="4.0.1" />
+    <PackageReference Include="Refit" Version="4.6.16" />
+  </ItemGroup>
+  <ItemGroup>
     <Folder Include="Models\" />
   </ItemGroup>
-
 </Project>
