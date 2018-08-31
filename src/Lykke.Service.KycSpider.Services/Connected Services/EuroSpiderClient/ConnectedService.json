@@ -2,7 +2,7 @@
   "ProviderId": "Microsoft.VisualStudio.ConnectedService.Wcf",
   "Version": "15.0.20119.1312",
   "ExtendedData": {
-    "Uri": "D:\\dev\\access.xml",
+    "Uri": "https://ecpm.eurospider.com/lykke-test-service/access?wsdl",
     "Namespace": "Lykke.Service.KycSpider.Services.EuroSpiderClient",
     "SelectedAccessLevelForGeneratedClass": "Internal",
     "GenerateMessageContract": true,
