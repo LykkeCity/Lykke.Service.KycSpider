@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Common.Log;
+using Lykke.Common.Log;
 using Lykke.Service.KycSpider.Core.Services;
 using Lykke.Service.KycSpider.Core.Settings;
 
@@ -21,12 +22,12 @@ namespace Lykke.Service.KycSpider.Services
             ISpiderInstantCheckService instantCheckService,
             ISpiderRegularCheckService regularCheckService,
             IGlobalCheckInfoService globalCheckInfoService,
-            ILog log
+            ILogFactory logFactory
         )
         {
             _dailyCheckTimeUtc = settings.DailyCheckTimeUtc;
             _globalCheckInfoService = globalCheckInfoService;
-            _log = log;
+            _log = logFactory.CreateLog(this);
 
             if (_dailyCheckTimeUtc < TimeSpan.FromHours(0) || TimeSpan.FromHours(24) <= _dailyCheckTimeUtc)
             {

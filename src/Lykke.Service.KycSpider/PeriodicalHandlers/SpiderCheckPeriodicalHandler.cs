@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Common;
 using Common.Log;
+using Lykke.Common.Log;
 using Lykke.Service.KycSpider.Core.Services;
 using Lykke.Service.KycSpider.Core.Settings;
 
@@ -10,8 +11,12 @@ namespace Lykke.Service.KycSpider.PeriodicalHandlers
     {
         private readonly ISpiderCheckManagerService _spiderCheckManagerService;
 
-        public SpiderCheckPeriodicalHandler(ISpiderCheckManagerService spiderCheckManagerService, SpiderCheckSettings settings, ILog log) :
-            base(nameof(SpiderCheckPeriodicalHandler), (int)settings.InstantCheckDelay.TotalMilliseconds, log)
+        public SpiderCheckPeriodicalHandler
+        (
+            ISpiderCheckManagerService spiderCheckManagerService,
+            SpiderCheckSettings settings,
+            ILogFactory logFactory
+        ) : base(settings.InstantCheckDelay, logFactory)
         {
             _spiderCheckManagerService = spiderCheckManagerService;
         }

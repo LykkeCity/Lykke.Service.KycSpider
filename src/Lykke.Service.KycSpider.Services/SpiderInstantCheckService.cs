@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Common.Log;
+using Lykke.Common.Log;
 using Lykke.Service.Kyc.Abstractions.Domain.Documents;
 using Lykke.Service.Kyc.Abstractions.Domain.KycDocuments.Contract;
 using Lykke.Service.Kyc.Abstractions.Requests;
@@ -48,7 +49,7 @@ namespace Lykke.Service.KycSpider.Services
             ISpiderCheckResultRepository spiderCheckResultRepository,
             IRequestableDocumentsService requestableDocumentsService,
             IDocumentsQueueReaderService documentsQueue,
-            ILog log
+            ILogFactory logFactory
         )
         {
             _diffService = diffService;
@@ -58,7 +59,7 @@ namespace Lykke.Service.KycSpider.Services
             _spiderCheckResultRepository = spiderCheckResultRepository;
             _requestableDocumentsService = requestableDocumentsService;
             _documentsQueue = documentsQueue;
-            _log = log;
+            _log = logFactory.CreateLog(this);
         }
 
         public async Task PerformInstantCheckAsync()
