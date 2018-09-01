@@ -10,7 +10,9 @@ namespace Lykke.Service.KycSpider.Settings
     {
         public KycSpiderSettings KycSpiderService { get; set; }
 
+
         public PersonalDataServiceClientSettings PersonalDataServiceClient { get; set; }
+
         public KycServiceClientSettings KycServiceClient { get; set; }
     }
 }

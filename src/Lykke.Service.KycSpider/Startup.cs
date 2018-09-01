@@ -31,7 +31,7 @@ namespace Lykke.Service.KycSpider
                 options.Logs = logs =>
                 {
                     logs.AzureTableName = "KycSpiderLog";
-                    logs.AzureTableConnectionStringResolver = settings => settings.KycSpiderService.Db.LogsConnString;
+                    logs.AzureTableConnectionStringResolver = settings => settings.KycSpiderService.Db.LogsConnection.ConnectionString;
 
                     // TODO: You could add extended logging configuration here:
                     /* 

@@ -1,18 +1,60 @@
 KycSpiderService:
     Db:
-        LogsConnString:
-            settings-key: LogsConnString
-            types:
-                - AzureTableStorage
+        LogsConnection:
+            TableName: "KycSpiderLog"
+            ConnectionString:
+                settings-key: KycSpider-LogsConnString
+                types: [AzureTableStorage]
+        GlobalCheckInfoConnection:
+            TableName: "GlobalCheckInfo"
+            ConnectionString:
+                settings-key: KycSpider-ConnString
+                types: [AzureTableStorage]
+        SpiderDocumentInfoConnection:
+            TableName: "SpiderDocumentInfo"
+            ConnectionString:
+                settings-key: KycSpider-ConnString
+                types: [AzureTableStorage]
+        VerifiableCustomerInfoConnection:
+            TableName: "VerifiableCustomerInfo"
+            ConnectionString:
+                settings-key: KycSpider-ConnString
+                types: [AzureTableStorage]
+        SpiderCheckResultsConnection:
+            TableName: "SpiderCheckResults"
+            ConnectionString:
+                settings-key: KycSpider-ConnString
+                types: [AzureTableStorage]
+    SpiderCheckSettings:
+        InstantCheckDelay: "00:01:00"
+        DailyCheckTimeUtc: "00:00:00"
+        RegularCheckDurationToWarn: "00:10:00"
+        InstantCheckDurationToWarn: "10:00:00"
+    SpiderServiceSettings:
+        User: 
+            settings-key: KycSpider-SpiderServiceUser
+        Password: 
+            settings-key: KycSpider-SpiderServicePassword
+        EndpointUrl: 
+            settings-key: KycSpider-SpiderServiceEndpointUrl
+
+PersonalDataServiceClient:
+    ServiceUri:
+        settings-key: PersonalDataServiceUrl
+    ApiKey:
+        settings-key: PersonalDataApiKey
+KycServiceClient:
+    ServiceUri:
+        settings-key: KycServiceUrl
+    ApiKey:
+        settings-key: KycApiKey
 SlackNotifications:
     AzureQueue:
         ConnectionString:
             settings-key: SlackNotificationsConnString
-            types:
-                - AzureTableStorage
+            types: [AzureTableStorage]
         QueueName:
             settings-key: SlackQueueName
 MonitoringServiceClient:
     MonitoringServiceUrl:
         settings-key: MonitoringServiceUrl
-

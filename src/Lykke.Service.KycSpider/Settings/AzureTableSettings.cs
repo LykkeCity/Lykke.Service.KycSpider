@@ -1,10 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Lykke.SettingsReader.Attributes;
 
 namespace Lykke.Service.KycSpider.Settings
 {
     public class AzureTableSettings
     {
-        [Required(AllowEmptyStrings = false)]
+        [AzureTableCheck]
         public string ConnectionString { get; set; }
 
         [Required(AllowEmptyStrings = false)]
