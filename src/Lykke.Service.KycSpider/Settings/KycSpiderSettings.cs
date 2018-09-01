@@ -10,6 +10,6 @@ namespace Lykke.Service.KycSpider.Settings
         public DbSettings Db { get; set; }
 
         public SpiderCheckSettings SpiderCheckSettings { get; set; }
-        public SpiderServiceSettings EuroSpiderServiceSettings { get; set; }
+        public EuroSpiderServiceSettings EuroSpiderServiceSettings { get; set; }
     }
 }

@@ -30,7 +30,7 @@ KycSpiderService:
         DailyCheckTimeUtc: "00:00:00"
         RegularCheckDurationToWarn: "00:10:00"
         InstantCheckDurationToWarn: "10:00:00"
-    SpiderServiceSettings:
+    EuroSpiderServiceSettings:
         User: 
             settings-key: KycSpider-SpiderServiceUser
         Password: 

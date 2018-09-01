@@ -16,14 +16,14 @@ namespace Lykke.Service.KycSpider.Services
     {
         private readonly ISpiderCheckResultRepository _repository;
         private readonly IPersonalDataService _personalDataService;
-        private readonly SpiderServiceSettings _settings;
+        private readonly EuroSpiderServiceSettings _settings;
         private readonly ChannelFactory<accessChannel> _euroSpiderChannelFactory;
 
         public SpiderCheckService
         (
             ISpiderCheckResultRepository repository,
             IPersonalDataService personalDataService,
-            SpiderServiceSettings settings
+            EuroSpiderServiceSettings settings
         )
         {
             _repository = repository;
