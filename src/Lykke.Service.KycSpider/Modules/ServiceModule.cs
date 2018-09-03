@@ -1,9 +1,4 @@
-﻿using System;
-using Autofac;
-using Autofac.Extensions.DependencyInjection;
-using AzureStorage;
-using AzureStorage.Tables;
-using Common.Log;
+﻿using Autofac;
 using Lykke.Service.KycSpider.Core.Repositories;
 using Lykke.Service.KycSpider.Core.Services;
 using Lykke.Service.KycSpider.PeriodicalHandlers;
@@ -11,7 +6,6 @@ using Lykke.Service.KycSpider.Services;
 using Lykke.Service.KycSpider.Services.Repositories;
 using Lykke.Service.KycSpider.Settings;
 using Lykke.SettingsReader;
-using Microsoft.WindowsAzure.Storage.Table;
 
 namespace Lykke.Service.KycSpider.Modules
 {
@@ -26,17 +20,6 @@ namespace Lykke.Service.KycSpider.Modules
 
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<HealthService>()
-                .As<IHealthService>()
-                .SingleInstance();
-
-            builder.RegisterType<StartupManager>()
-                .As<IStartupManager>();
-
-            builder.RegisterType<ShutdownManager>()
-                .As<IShutdownManager>();
-
-
             builder
                 .AddService<CheckPersonResultDiffService, ICheckPersonResultDiffService>()
                 .AddService<GlobalCheckInfoService, IGlobalCheckInfoService>()
