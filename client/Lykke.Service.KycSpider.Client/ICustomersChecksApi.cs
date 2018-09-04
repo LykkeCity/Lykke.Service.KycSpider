@@ -11,14 +11,14 @@ namespace Lykke.Service.KycSpider.Client
     [PublicAPI]
     public interface ICustomersChecksApi
     {
-        [Get("getchecksinfo/{clientId}")]
+        [Get("/getchecksinfo/{clientId}")]
         Task<CustomerChecksInfo> GetChecksInfoAsync(string clientId);
 
-        [Get("getdocumentinfo/{clientId}/{documentId}")]
+        [Get("/getdocumentinfo/{clientId}/{documentId}")]
         Task<SpiderDocumentInfo> GetDocumentInfoAsync(string clientId, string documentId);
 
 
-        [Post("enablecheck/{clientId}/{type}")]
+        [Post("/enablecheck/{clientId}/{type}")]
         Task EnablePepCheckAsync(string clientId, string type);
 
     }
