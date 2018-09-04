@@ -27,10 +27,4 @@
     <PackageReference Include="Lykke.SettingsReader" Version="4.0.1" />
     <PackageReference Include="Refit" Version="4.6.16" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Lykke.Service.KycSpider.Core\Lykke.Service.KycSpider.Core.csproj" />
-  </ItemGroup>
 </Project>
