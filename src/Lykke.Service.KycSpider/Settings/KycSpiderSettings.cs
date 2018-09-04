@@ -11,5 +11,7 @@ namespace Lykke.Service.KycSpider.Settings
 
         public SpiderCheckSettings SpiderCheckSettings { get; set; }
         public EuroSpiderServiceSettings EuroSpiderServiceSettings { get; set; }
+        public string KycCqrsRabbitConnString { get; set; }
+        public string KycCqrsEnvironment { get; set; }
     }
 }

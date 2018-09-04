@@ -29,6 +29,10 @@ KycSpiderService:
         PeriodicalHandlerTimerDelay: "00:01:00"
         DailyCheckTimeUtc: "00:00:00"
         RegularCheckDurationToWarn: "10:00:00"
+    KycCqrsRabbitConnString:
+        settings-key: KycShared-CqrsRabbitConnString
+        types: [RabbitMq]
+    KycCqrsEnvironment: "lykke.kyc-service"
     EuroSpiderServiceSettings:
         User: 
             settings-key: KycSpider-SpiderServiceUser
