@@ -24,7 +24,7 @@ namespace Lykke.Service.KycSpider.Modules
             return builder;
         }
 
-        public static ContainerBuilder AddNoSQLTableStorage<T>(this ContainerBuilder builder, IReloadingManager<AzureTableSettings> settings)
+        public static ContainerBuilder AddNoSqlTableStorage<T>(this ContainerBuilder builder, IReloadingManager<AzureTableSettings> settings)
             where T : class, ITableEntity, new()
         {
             builder.Register(context =>

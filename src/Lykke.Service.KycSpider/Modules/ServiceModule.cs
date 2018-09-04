@@ -27,24 +27,24 @@ namespace Lykke.Service.KycSpider.Modules
                 .AddService<CustomerChecksService, ICustomerChecksService>()
                 .AddService<SpiderRegularCheckService, ISpiderRegularCheckService>()
                 .AddService<SpiderFirstCheckService, ISpiderFirstCheckService>()
-                .AddService<SpiderCheckService, ISpiderCheckService>(TypedParameter.From(_settings.CurrentValue.EuroSpiderServiceSettings))
+
+                .AddService<SpiderCheckService, ISpiderCheckService>(
+                    TypedParameter.From(_settings.CurrentValue.EuroSpiderServiceSettings))
 
                 .AddService<SpiderCheckManagerService, ISpiderCheckManagerService>(
                     TypedParameter.From(_settings.CurrentValue.SpiderCheckSettings))
 
 
-                .AddNoSQLTableStorage<SpiderCheckResultEntity>(_settings.Nested(x => x.Db.SpiderCheckResultsConnection))
-                .AddNoSQLTableStorage<GlobalCheckInfoEntity>(_settings.Nested(x => x.Db.GlobalCheckInfoConnection))
-                .AddNoSQLTableStorage<SpiderDocumentInfoEntity>(_settings.Nested(x => x.Db.SpiderDocumentInfoConnection))
-                .AddNoSQLTableStorage<CustomerChecksInfoEntity>(_settings.Nested(x => x.Db.CustomerChecksInfoConnection))
+                .AddNoSqlTableStorage<SpiderCheckResultEntity>(_settings.Nested(x => x.Db.SpiderCheckResultsConnection))
+                .AddNoSqlTableStorage<GlobalCheckInfoEntity>(_settings.Nested(x => x.Db.GlobalCheckInfoConnection))
+                .AddNoSqlTableStorage<SpiderDocumentInfoEntity>(_settings.Nested(x => x.Db.SpiderDocumentInfoConnection))
+                .AddNoSqlTableStorage<CustomerChecksInfoEntity>(_settings.Nested(x => x.Db.CustomerChecksInfoConnection))
 
                 .AddService<GlobalCheckInfoRepository, IGlobalCheckInfoRepository>()
                 .AddService<SpiderDocumentInfoRepository, ISpiderDocumentInfoRepository>()
-               .AddService<CustomerChecksInfoRepository, ICustomerChecksInfoRepository>()
+                .AddService<CustomerChecksInfoRepository, ICustomerChecksInfoRepository>()
                 .AddService<SpiderCheckResultRepository, ISpiderCheckResultRepository>()
 
-                
-            
                 .ApplyConfig(RegisterPeriodicalHandlers);
         }
 
