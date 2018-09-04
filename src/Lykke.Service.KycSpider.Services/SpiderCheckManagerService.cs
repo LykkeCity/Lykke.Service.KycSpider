@@ -9,7 +9,6 @@ namespace Lykke.Service.KycSpider.Services
 {
     public class SpiderCheckManagerService : ISpiderCheckManagerService
     {
-        private readonly RepeatableTask _instantCheckRepeatableTask;
         private readonly RepeatableTask _regularCheckRepeatableTask;
 
         private readonly TimeSpan _dailyCheckTimeUtc;
@@ -19,7 +18,6 @@ namespace Lykke.Service.KycSpider.Services
         public SpiderCheckManagerService
         (
             SpiderCheckSettings settings,
-            ISpiderInstantCheckService instantCheckService,
             ISpiderRegularCheckService regularCheckService,
             IGlobalCheckInfoService globalCheckInfoService,
             ILogFactory logFactory
@@ -36,18 +34,11 @@ namespace Lykke.Service.KycSpider.Services
                     nameof(settings));
             }
 
-            _instantCheckRepeatableTask = new RepeatableTask(
-                instantCheckService.PerformInstantCheckAsync,
-                settings.InstantCheckDurationToWarn,
-                async ex => await _log.WriteFatalErrorAsync(nameof(SpiderCheckManagerService), "Instant check", ex),
-                async startTime => await _log.WriteWarningAsync(nameof(SpiderCheckManagerService), "Instant check", $"Instant check lasts more then {settings.InstantCheckDurationToWarn}. It starts at {startTime}")
-            );
-
             _regularCheckRepeatableTask = new RepeatableTask(
                 regularCheckService.PerformRegularCheckAsync,
                 settings.RegularCheckDurationToWarn,
-                async ex => await _log.WriteFatalErrorAsync(nameof(SpiderCheckManagerService), "Regular check", ex),
-                async startTime => await _log.WriteWarningAsync(nameof(SpiderCheckManagerService), "Regular check", $"Regular check lasts more then {settings.RegularCheckDurationToWarn}. It starts at {startTime}")
+                async ex => _log.Critical("Regular check", ex),
+                async startTime =>_log.Warning("Regular check", $"Regular check lasts more then {settings.RegularCheckDurationToWarn}. It starts at {startTime}")
             );
         }
 
@@ -59,37 +50,15 @@ namespace Lykke.Service.KycSpider.Services
             }
 
             await _regularCheckRepeatableTask.UpdateStatusAsync();
-            await _instantCheckRepeatableTask.TryRepeatAsync();
-        }
-
-        public async Task<bool> TryStartInstantCheckManuallyAsync()
-        {
-            var result = await _instantCheckRepeatableTask.TryRepeatAsync();
-
-            if (result)
-            {
-                await _log.WriteInfoAsync(nameof(SpiderCheckManagerService), nameof(TryStartInstantCheckManuallyAsync), "Instant check started manually");
-            }
-            else
-            {
-                await _log.WriteInfoAsync(nameof(SpiderCheckManagerService), nameof(TryStartInstantCheckManuallyAsync), "Instant did not start manually due to previous task in progress");
-            }
-
-            return result;
         }
 
         public async Task<bool> TryStartRegularCheckManuallyAsync()
         {
             var result = await _regularCheckRepeatableTask.TryRepeatAsync();
 
-            if (result)
-            {
-                await _log.WriteInfoAsync(nameof(SpiderCheckManagerService), nameof(TryStartRegularCheckManuallyAsync), "Regular check started manually");
-            }
-            else
-            {
-                await _log.WriteInfoAsync(nameof(SpiderCheckManagerService), nameof(TryStartRegularCheckManuallyAsync), "Regular did not start manually due to previous task in progress");
-            }
+            _log.Info(result
+                ? "Regular check started manually"
+                : "Regular did not start manually due to previous task in progress");
 
             return result;
         }

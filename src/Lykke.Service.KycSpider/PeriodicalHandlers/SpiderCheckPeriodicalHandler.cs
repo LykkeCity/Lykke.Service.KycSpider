@@ -16,7 +16,7 @@ namespace Lykke.Service.KycSpider.PeriodicalHandlers
             ISpiderCheckManagerService spiderCheckManagerService,
             SpiderCheckSettings settings,
             ILogFactory logFactory
-        ) : base(settings.InstantCheckDelay, logFactory)
+        ) : base(settings.PeriodicalHandlerTimerDelay, logFactory)
         {
             _spiderCheckManagerService = spiderCheckManagerService;
         }

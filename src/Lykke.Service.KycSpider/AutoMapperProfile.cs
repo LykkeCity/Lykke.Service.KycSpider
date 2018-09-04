@@ -12,7 +12,7 @@ namespace Lykke.Service.KycSpider
         {
             CreateMapForEntity<IGlobalCheckInfo, GlobalCheckInfoEntity>();
             CreateMapForEntity<ISpiderDocumentInfo, SpiderDocumentInfoEntity>();
-            CreateMapForEntity<IVerifiableCustomerInfo, VerifiableCustomerInfoEntity>();
+            CreateMapForEntity<ICustomerChecksInfo, CustomerChecksInfoEntity>();
             CreateMapForEntity<ISpiderCheckResult, SpiderCheckResultEntity>();
         }
 

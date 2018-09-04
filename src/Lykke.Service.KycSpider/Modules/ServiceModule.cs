@@ -24,9 +24,9 @@ namespace Lykke.Service.KycSpider.Modules
                 .AddService<CheckPersonResultDiffService, ICheckPersonResultDiffService>()
                 .AddService<GlobalCheckInfoService, IGlobalCheckInfoService>()
                 .AddService<SpiderDocumentsService, ISpiderDocumentsService>()
-                .AddService<VerifiableCustomerService, IVerifiableCustomerService>()
+                .AddService<CustomerChecksService, ICustomerChecksService>()
                 .AddService<SpiderRegularCheckService, ISpiderRegularCheckService>()
-                .AddService<SpiderInstantCheckService, ISpiderInstantCheckService>()
+                .AddService<SpiderFirstCheckService, ISpiderFirstCheckService>()
                 .AddService<SpiderCheckService, ISpiderCheckService>(TypedParameter.From(_settings.CurrentValue.EuroSpiderServiceSettings))
 
                 .AddService<SpiderCheckManagerService, ISpiderCheckManagerService>(
@@ -36,11 +36,11 @@ namespace Lykke.Service.KycSpider.Modules
                 .AddNoSQLTableStorage<SpiderCheckResultEntity>(_settings.Nested(x => x.Db.SpiderCheckResultsConnection))
                 .AddNoSQLTableStorage<GlobalCheckInfoEntity>(_settings.Nested(x => x.Db.GlobalCheckInfoConnection))
                 .AddNoSQLTableStorage<SpiderDocumentInfoEntity>(_settings.Nested(x => x.Db.SpiderDocumentInfoConnection))
-                .AddNoSQLTableStorage<VerifiableCustomerInfoEntity>(_settings.Nested(x => x.Db.VerifiableCustomerInfoConnection))
+                .AddNoSQLTableStorage<CustomerChecksInfoEntity>(_settings.Nested(x => x.Db.CustomerChecksInfoConnection))
 
                 .AddService<GlobalCheckInfoRepository, IGlobalCheckInfoRepository>()
                 .AddService<SpiderDocumentInfoRepository, ISpiderDocumentInfoRepository>()
-               .AddService<VerifiableCustomerInfoRepository, IVerifiableCustomerInfoRepository>()
+               .AddService<CustomerChecksInfoRepository, ICustomerChecksInfoRepository>()
                 .AddService<SpiderCheckResultRepository, ISpiderCheckResultRepository>()
 
                 

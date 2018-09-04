@@ -5,7 +5,7 @@ namespace Lykke.Service.KycSpider.Core.Domain.PersonDiff
 {
     public interface IPersonDiffRequest
     {
-        IVerifiableCustomerInfo Customer { get; }
+        ICustomerChecksInfo CustomerChecks { get; }
 
         ISpiderCheckResult CurrentResult { get; }
         ISpiderCheckResult PreviousResult { get; }

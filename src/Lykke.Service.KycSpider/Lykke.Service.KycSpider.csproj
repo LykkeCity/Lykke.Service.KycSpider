@@ -31,9 +31,6 @@
     <ProjectReference Include="..\Lykke.Service.KycSpider.Core\Lykke.Service.KycSpider.Core.csproj" />
     <ProjectReference Include="..\Lykke.Service.KycSpider.Services\Lykke.Service.KycSpider.Services.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
   <Target Name="PrepublishScript" BeforeTargets="PrepareForPublish">
     <ItemGroup>
       <DocFile Include="$(OutputPath)$(AssemblyName).xml" />

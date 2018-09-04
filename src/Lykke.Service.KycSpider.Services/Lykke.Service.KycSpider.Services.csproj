@@ -9,7 +9,8 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="6.2.2" />
     <PackageReference Include="Lykke.AzureStorage" Version="8.4.1" />
-    <PackageReference Include="Lykke.Service.Kyc.Client" Version="1.0.234" />
+    <PackageReference Include="Lykke.Service.Kyc.Client" Version="1.0.253" />
+    <PackageReference Include="Lykke.Service.PersonalData" Version="2.0.2" />
     <PackageReference Include="System.ServiceModel.Duplex" Version="4.4.*" />
     <PackageReference Include="System.ServiceModel.Http" Version="4.4.*" />
     <PackageReference Include="System.ServiceModel.NetTcp" Version="4.4.*" />

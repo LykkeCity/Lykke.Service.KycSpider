@@ -23,14 +23,6 @@ namespace Lykke.Service.KycSpider.Modules
             builder.Register<IPersonalDataService>(context => new PersonalDataService(
                     _settings.CurrentValue.PersonalDataServiceClient,
                     context.Resolve<ILogFactory>().CreateLog(nameof(PersonalDataService))));
-
-            builder.Register<IRequestableDocumentsService>(context => new RequestableDocumentsServiceClient(
-                _settings.CurrentValue.KycServiceClient,
-                context.Resolve<ILogFactory>().CreateLog(nameof(RequestableDocumentsServiceClient))));
-
-            builder.Register<IDocumentsQueueReaderService>(context => new DocumentsQueueReaderServiceClient(
-                _settings.CurrentValue.KycServiceClient,
-                context.Resolve<ILogFactory>().CreateLog(nameof(DocumentsQueueReaderServiceClient))));
         }
     }
 }

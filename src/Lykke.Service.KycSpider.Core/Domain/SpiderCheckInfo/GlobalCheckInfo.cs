@@ -7,6 +7,7 @@ namespace Lykke.Service.KycSpider.Core.Domain.SpiderCheckInfo
         public DateTime StartDateTime { get; set; }
         public DateTime EndDateTime { get; set; }
 
+        public int TotalClients { get; set; }
         public int SpiderChecks { get; set; }
         public int PepSuspects { get; set; }
         public int CrimeSuspects { get; set; }

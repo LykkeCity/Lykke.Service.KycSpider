@@ -7,7 +7,7 @@ namespace Lykke.Service.KycSpider.Settings
         public AzureTableSettings LogsConnection { get; set; }
         public AzureTableSettings GlobalCheckInfoConnection { get; set; }
         public AzureTableSettings SpiderDocumentInfoConnection { get; set; }
-        public AzureTableSettings VerifiableCustomerInfoConnection { get; set; }
+        public AzureTableSettings CustomerChecksInfoConnection { get; set; }
         public AzureTableSettings SpiderCheckResultsConnection { get; set; }
     }
 }

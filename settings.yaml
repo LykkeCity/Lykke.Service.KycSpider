@@ -15,8 +15,8 @@ KycSpiderService:
             ConnectionString:
                 settings-key: KycSpider-ConnString
                 types: [AzureTableStorage]
-        VerifiableCustomerInfoConnection:
-            TableName: "VerifiableCustomerInfo"
+        CustomerChecksInfoConnection:
+            TableName: "CustomerChecksInfo"
             ConnectionString:
                 settings-key: KycSpider-ConnString
                 types: [AzureTableStorage]
@@ -26,10 +26,9 @@ KycSpiderService:
                 settings-key: KycSpider-ConnString
                 types: [AzureTableStorage]
     SpiderCheckSettings:
-        InstantCheckDelay: "00:01:00"
+        PeriodicalHandlerTimerDelay: "00:01:00"
         DailyCheckTimeUtc: "00:00:00"
-        RegularCheckDurationToWarn: "00:10:00"
-        InstantCheckDurationToWarn: "10:00:00"
+        RegularCheckDurationToWarn: "10:00:00"
     EuroSpiderServiceSettings:
         User: 
             settings-key: KycSpider-SpiderServiceUser

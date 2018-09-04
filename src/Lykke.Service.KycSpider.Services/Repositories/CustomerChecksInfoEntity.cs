@@ -3,39 +3,45 @@ using Lykke.Service.KycSpider.Core.Domain.SpiderCheckInfo;
 
 namespace Lykke.Service.KycSpider.Services.Repositories
 {
-    public class VerifiableCustomerInfoEntity : AzureTableEntity, IVerifiableCustomerInfo
+    public class CustomerChecksInfoEntity : AzureTableEntity, ICustomerChecksInfo
     {
         public string CustomerId => RowKey;
 
-        public string LatestSpiderCheckId { get; set; }
+        public string LatestPepCheckId { get; set; }
+        public string LatestCrimeCheckId { get; set; }
+        public string LatestSanctionCheckId { get; set; }
+
         public bool? IsPepCheckRequired { get; set; }
         public bool? IsCrimeCheckRequired { get; set; }
         public bool? IsSanctionCheckRequired { get; set; }
 
-        bool IVerifiableCustomerInfo.IsPepCheckRequired => IsPepCheckRequired == true;
-        bool IVerifiableCustomerInfo.IsCrimeCheckRequired => IsCrimeCheckRequired == true;
-        bool IVerifiableCustomerInfo.IsSanctionCheckRequired => IsSanctionCheckRequired == true;
+        bool ICustomerChecksInfo.IsPepCheckRequired => IsPepCheckRequired == true;
+        bool ICustomerChecksInfo.IsCrimeCheckRequired => IsCrimeCheckRequired == true;
+        bool ICustomerChecksInfo.IsSanctionCheckRequired => IsSanctionCheckRequired == true;
 
         public static string GeneratePartitionKey(string clientId) => clientId.Substring(0, 4);
         public static string GenerateRowKey(string clientId) => clientId;
 
-        public static VerifiableCustomerInfoEntity Create(IVerifiableCustomerInfo src)
+        public static CustomerChecksInfoEntity Create(ICustomerChecksInfo src)
         {
-            return new VerifiableCustomerInfoEntity
+            return new CustomerChecksInfoEntity
             {
                 PartitionKey = GeneratePartitionKey(src.CustomerId),
                 RowKey = GenerateRowKey(src.CustomerId),
 
-                LatestSpiderCheckId = src.LatestSpiderCheckId,
+                LatestPepCheckId = src.LatestPepCheckId,
+                LatestCrimeCheckId = src.LatestCrimeCheckId,
+                LatestSanctionCheckId = src.LatestSanctionCheckId,
+
                 IsPepCheckRequired = src.IsPepCheckRequired,
                 IsCrimeCheckRequired = src.IsCrimeCheckRequired,
                 IsSanctionCheckRequired = src.IsSanctionCheckRequired
             };
         }
 
-        public static VerifiableCustomerInfoEntity Create(string clientId, bool? pep, bool? crime, bool? sanction)
+        public static CustomerChecksInfoEntity Create(string clientId, bool? pep, bool? crime, bool? sanction)
         {
-            return new VerifiableCustomerInfoEntity
+            return new CustomerChecksInfoEntity
             {
                 PartitionKey = GeneratePartitionKey(clientId),
                 RowKey = GenerateRowKey(clientId),
@@ -46,14 +52,16 @@ namespace Lykke.Service.KycSpider.Services.Repositories
             };
         }
 
-        public static VerifiableCustomerInfoEntity Create(string clientId, string spiderCheckId)
+        public static CustomerChecksInfoEntity Create(string clientId, string pepCheckId, string crimeCheckId, string sanctionCheckId)
         {
-            return new VerifiableCustomerInfoEntity
+            return new CustomerChecksInfoEntity
             {
                 PartitionKey = GeneratePartitionKey(clientId),
                 RowKey = GenerateRowKey(clientId),
 
-                LatestSpiderCheckId = spiderCheckId
+                LatestPepCheckId = pepCheckId,
+                LatestCrimeCheckId = crimeCheckId,
+                LatestSanctionCheckId = sanctionCheckId,
             };
         }
     }
