@@ -30,4 +30,7 @@
   <ItemGroup>
     <Folder Include="Models\" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Lykke.Service.KycSpider.Core\Lykke.Service.KycSpider.Core.csproj" />
+  </ItemGroup>
 </Project>

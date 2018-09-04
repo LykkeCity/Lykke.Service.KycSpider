@@ -1,5 +1,4 @@
-﻿using System.Net;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using AutoMapper;
 using Lykke.Service.KycSpider.Core.Domain.SpiderCheckInfo;
 using Microsoft.AspNetCore.Mvc;
@@ -25,32 +24,25 @@ namespace Lykke.Service.KycSpider.Controllers
         }
 
         [HttpGet("getchecksinfo/{clientId}")]
-        [ProducesResponseType(typeof(CustomerChecksInfo), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> GetAsync(string clientId)
+        public async Task<CustomerChecksInfo> GetChecksInfoAsync(string clientId)
         {
             var client = await _customerChecksService.GetAsync(clientId);
 
-            return Ok(_mapper.Map<CustomerChecksInfo>(client));
+            return _mapper.Map<CustomerChecksInfo>(client);
         }
 
         [HttpGet("getdocumentinfo/{clientId}/{documentId}")]
-        [ProducesResponseType(typeof(SpiderDocumentInfo), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> GetDocumentInfoAsync(string clientId, string documentId)
+        public async Task<SpiderDocumentInfo> GetDocumentInfoAsync(string clientId, string documentId)
         {
             var info = await _customerChecksService.GetSpiderDocumentInfo(clientId, documentId);
 
-            return Ok(_mapper.Map<SpiderDocumentInfo>(info));
+            return _mapper.Map<SpiderDocumentInfo>(info);
         }
 
         [HttpPost("enablecheck/{clientId}/{type}")]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<IActionResult> EnablePepCheckAsync(string clientId, string type)
+        public async Task EnablePepCheckAsync(string clientId, string type)
         {
             await _customerChecksService.EnableCheck(clientId, type);
-
-            return Ok();
         }
-
-
     }
 }

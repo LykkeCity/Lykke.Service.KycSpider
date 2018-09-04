@@ -1,21 +1,34 @@
-﻿using Lykke.HttpClientGenerator;
+﻿using System.Threading.Tasks;
+using Lykke.HttpClientGenerator;
+using Lykke.Service.KycSpider.Core.Domain.SpiderCheckInfo;
 
 namespace Lykke.Service.KycSpider.Client
 {
-    /// <summary>
-    /// KycSpider API aggregating interface.
-    /// </summary>
+    /// <inheritdoc/>
     public class KycSpiderClient : IKycSpiderClient
     {
-        // Note: Add similar Api properties for each new service controller
-
-        /// <summary>Inerface to KycSpider Api.</summary>
-        public IKycSpiderApi Api { get; private set; }
+        /// <inheritdoc/>
+        public ICustomersChecksApi CustomersChecksApi { get; private set; }
 
         /// <summary>C-tor</summary>
         public KycSpiderClient(IHttpClientGenerator httpClientGenerator)
         {
-            Api = httpClientGenerator.Generate<IKycSpiderApi>();
+            CustomersChecksApi = httpClientGenerator.Generate<ICustomersChecksApi>();
+        }
+
+        public Task<CustomerChecksInfo> GetChecksInfoAsync(string clientId)
+        {
+            return CustomersChecksApi.GetChecksInfoAsync(clientId);
+        }
+
+        public Task<SpiderDocumentInfo> GetDocumentInfoAsync(string clientId, string documentId)
+        {
+            return CustomersChecksApi.GetDocumentInfoAsync(clientId, documentId);
+        }
+
+        public Task EnablePepCheckAsync(string clientId, string type)
+        {
+            return CustomersChecksApi.EnablePepCheckAsync(clientId, type);
         }
     }
 }
