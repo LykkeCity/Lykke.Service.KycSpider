@@ -9,6 +9,7 @@ using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
+using AutoMapper;
 
 namespace Lykke.Service.KycSpider
 {
@@ -24,6 +25,9 @@ namespace Lykke.Service.KycSpider
         [UsedImplicitly]
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
+            Mapper.Initialize(x=> x.AddProfile(typeof(AutoMapperProfile)));
+            services.AddSingleton(Mapper.Instance);
+
             return services.BuildServiceProvider<AppSettings>(options =>
             {
                 options.SwaggerOptions = _swaggerOptions;

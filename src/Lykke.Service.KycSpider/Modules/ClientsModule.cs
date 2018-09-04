@@ -22,7 +22,12 @@ namespace Lykke.Service.KycSpider.Modules
         {
             builder.Register<IPersonalDataService>(context => new PersonalDataService(
                     _settings.CurrentValue.PersonalDataServiceClient,
-                    context.Resolve<ILogFactory>().CreateLog(nameof(PersonalDataService))));
+                    context.Resolve<ILogFactory>().CreateLog(nameof(PersonalDataService))));          
+
+            builder.Register<ISpiderCheckProcessingService>(context => new SpiderCheckProcessingServiceClient(
+                _settings.CurrentValue.KycServiceClient,
+                context.Resolve<ILogFactory>().CreateLog(nameof(SpiderCheckProcessingServiceClient))));
+            
         }
     }
 }
