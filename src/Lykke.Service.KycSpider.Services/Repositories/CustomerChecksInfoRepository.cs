@@ -19,7 +19,7 @@ namespace Lykke.Service.KycSpider.Services.Repositories
         public async Task<ICustomerChecksInfo> AddAsync(ICustomerChecksInfo entity)
         {
             var newEntity = CustomerChecksInfoEntity.Create(entity);
-            await _tableStorage.InsertAsync(newEntity);
+            await _tableStorage.InsertOrReplaceAsync(newEntity);
             return newEntity;
         }
 
