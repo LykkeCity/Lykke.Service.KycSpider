@@ -1,15 +1,13 @@
 ﻿using JetBrains.Annotations;
-using Lykke.Logs.Loggers.LykkeSlack;
 using Lykke.Sdk;
-using Lykke.Sdk.Health;
-using Lykke.Sdk.Middleware;
 using Lykke.Service.KycSpider.Settings;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using System;
 using AutoMapper;
+using Lykke.AzureStorage.Tables.Entity.Metamodel;
+using Lykke.AzureStorage.Tables.Entity.Metamodel.Providers;
+using Lykke.AzureStorage.Tables.Entity.ValueTypesMerging;
 
 namespace Lykke.Service.KycSpider
 {
@@ -27,6 +25,17 @@ namespace Lykke.Service.KycSpider
         {
             Mapper.Initialize(x=> x.AddProfile(typeof(AutoMapperProfile)));
             services.AddSingleton(Mapper.Instance);
+
+            var conventionProvider = new ConventionBasedMetamodelProvider()
+                .AddTypeValueTypesMergingStrategyRule(
+                    t => true,
+                    ValueTypeMergingStrategy.Forbid);
+
+            var provider = new CompositeMetamodelProvider()
+                .AddProvider(new AnnotationsBasedMetamodelProvider())
+                .AddProvider(conventionProvider);
+
+            EntityMetamodel.Configure(provider);
 
             return services.BuildServiceProvider<AppSettings>(options =>
             {
