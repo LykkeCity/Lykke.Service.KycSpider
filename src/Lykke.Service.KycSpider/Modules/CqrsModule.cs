@@ -56,7 +56,7 @@ namespace Lykke.Service.KycSpider.Modules
                     Register.DefaultEndpointResolver(new RabbitMqConventionEndpointResolver("RabbitMq",
                         SerializationFormat.ProtoBuf, environment: _settings.KycSpiderService.KycCqrsEnvironment)),
 
-                    Register.BoundedContext("kyc-notifications-status-proceed")
+                    Register.BoundedContext("kyc-spider-status-proceed")
                         .ListeningEvents(typeof(ChangeStatusEvent))
                         .From("kyc-profile-status-changes")
                         .On("kyc-profile-status-changes-commands")
