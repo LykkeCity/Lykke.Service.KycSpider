@@ -51,13 +51,13 @@ namespace Lykke.Service.KycSpider.Services
             _log.Info($"Stated first spider check for {clientId}");
 
             var checkResult = await _spiderCheckService.CheckAsync(clientId);
-            await SaveDocuments(checkResult);
-            await SaveCustomerChecksInfo(checkResult);
+            var checksInfo = await SaveDocuments(checkResult);
+            await SaveCustomerChecksInfo(checkResult, checksInfo);
 
             _log.Info($"Finished first spider check for {clientId}");
         }
 
-        private async Task SaveCustomerChecksInfo(ISpiderCheckResult result)
+        private async Task SaveCustomerChecksInfo(ISpiderCheckResult result, (bool pep, bool crime, bool sanction) checksInfo)
         {
             var clientId = result.CustomerId;
             var checkId = result.ResultId;
@@ -70,13 +70,13 @@ namespace Lykke.Service.KycSpider.Services
                 LatestCrimeCheckId = checkId,
                 LatestSanctionCheckId = checkId,
 
-                IsPepCheckRequired = true,
-                IsCrimeCheckRequired = true,
-                IsSanctionCheckRequired = true
+                IsPepCheckRequired = checksInfo.pep,
+                IsCrimeCheckRequired = checksInfo.crime,
+                IsSanctionCheckRequired = checksInfo.sanction
             });
         }
 
-        private async Task SaveDocuments(ISpiderCheckResult result)
+        private async Task<(bool pep, bool crime, bool sanction)> SaveDocuments(ISpiderCheckResult result)
         {
             var pepDiff = _diffService.ComputeDiffWithEmptyByPep(result);
             var crimeDiff = _diffService.ComputeDiffWithEmptyByPep(result);
@@ -85,16 +85,18 @@ namespace Lykke.Service.KycSpider.Services
             var clientId = result.CustomerId;
             var checkId = result.ResultId;
 
-            await Task.WhenAll(
-                SaveDocument(clientId, pepDiff, PepSpiderCheck.ApiType, checkId),
-                SaveDocument(clientId, crimeDiff, CrimeSpiderCheck.ApiType, checkId),
-                SaveDocument(clientId, sanctionDiff, SanctionSpiderCheck.ApiType, checkId)
-            );
+            var pepTask = SaveDocument(clientId, pepDiff, PepSpiderCheck.ApiType, checkId);
+            var crimeTask = SaveDocument(clientId, crimeDiff, CrimeSpiderCheck.ApiType, checkId);
+            var sanctionTask = SaveDocument(clientId, sanctionDiff, SanctionSpiderCheck.ApiType, checkId);
+
+            return (await pepTask, await crimeTask, await sanctionTask);
         }
 
-        private async Task SaveDocument(string clientId, ISpiderCheckResultDiff diff, string type, string checkId)
+        private async Task<bool> SaveDocument(string clientId, ISpiderCheckResultDiff diff, string type, string checkId)
         {
-            if (IsAutoApprovedDiff(diff))
+            var isAutoApprovedDiff = IsAutoApprovedDiff(diff);
+
+            if (isAutoApprovedDiff)
             {
                 var document = await _spiderCheckProcessingService.AddApprovedSpiderCheck(clientId, type,
                     new KycChangeRequest<CommonSpiderCheck>
@@ -121,6 +123,8 @@ namespace Lykke.Service.KycSpider.Services
 
                 await SaveSpiderDocumentInfo(clientId, document.DocumentId, diff, checkId);
             }
+
+            return isAutoApprovedDiff;
         }
 
         private async Task SaveSpiderDocumentInfo(string clientId, string documentId, ISpiderCheckResultDiff diff, string checkId)
