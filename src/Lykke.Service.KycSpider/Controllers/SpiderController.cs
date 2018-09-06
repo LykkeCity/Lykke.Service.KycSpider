@@ -1,7 +1,5 @@
 ﻿using System.Net;
 using System.Threading.Tasks;
-using AutoMapper;
-using Lykke.Service.KycSpider.Core.Domain.SpiderCheckInfo;
 using Microsoft.AspNetCore.Mvc;
 using Lykke.Service.KycSpider.Core.Services;
 

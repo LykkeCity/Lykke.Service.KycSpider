@@ -157,7 +157,7 @@ namespace Lykke.Service.KycSpider.Services
                 await _customerChecksInfoRepository.UpdateCheckStatesAsync(clientId, apiType, false);
             }
 
-            await _customerChecksInfoRepository.UpdateLatestCheckIdAsync(clientId, apiType, previousResultId);
+            await _customerChecksInfoRepository.UpdateLatestCheckIdAsync(clientId, apiType, currentResult.ResultId);
 
             return summary;
         }
@@ -210,7 +210,7 @@ namespace Lykke.Service.KycSpider.Services
 
             public int ChangedProfiles { get; set; }
 
-            public bool IsSuspected => AddedProfiles > 0 && RemovedProfiles > 0 && ChangedProfiles > 0;
+            public bool IsSuspected => AddedProfiles > 0 || ChangedProfiles > 0;
 
             public static CheckSummary FromDiff(ISpiderCheckResultDiff diff)
             {
