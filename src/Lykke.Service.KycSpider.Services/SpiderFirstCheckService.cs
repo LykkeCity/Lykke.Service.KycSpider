@@ -141,7 +141,7 @@ namespace Lykke.Service.KycSpider.Services
 
         private static bool IsAutoApprovedDiff(ISpiderCheckResultDiff diff)
         {
-            return diff.AddedProfiles.Count == 0 || diff.ChangedProfiles.Count == 0;
+            return diff.AddedProfiles.Count == 0 && diff.ChangedProfiles.Count == 0;
         }
     }
 }
