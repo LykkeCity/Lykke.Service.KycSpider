@@ -79,8 +79,8 @@ namespace Lykke.Service.KycSpider.Services
         private async Task<(bool pep, bool crime, bool sanction)> SaveDocuments(ISpiderCheckResult result)
         {
             var pepDiff = _diffService.ComputeDiffWithEmptyByPep(result);
-            var crimeDiff = _diffService.ComputeDiffWithEmptyByPep(result);
-            var sanctionDiff = _diffService.ComputeDiffWithEmptyByPep(result);
+            var crimeDiff = _diffService.ComputeDiffWithEmptyByCrime(result);
+            var sanctionDiff = _diffService.ComputeDiffWithEmptyBySanction(result);
 
             var clientId = result.CustomerId;
             var checkId = result.ResultId;
