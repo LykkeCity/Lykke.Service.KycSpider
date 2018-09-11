@@ -19,7 +19,7 @@ namespace Lykke.Service.KycSpider.Client
 
 
         [Post("/api/CustomersChecks/enablecheck/{clientId}/{type}")]
-        Task EnablePepCheckAsync(string clientId, string type);
+        Task EnableCheckAsync(string clientId, string type);
 
     }
 }

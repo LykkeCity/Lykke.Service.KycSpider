@@ -26,9 +26,9 @@ namespace Lykke.Service.KycSpider.Client
             return CustomersChecksApi.GetDocumentInfoAsync(clientId, documentId);
         }
 
-        public Task EnablePepCheckAsync(string clientId, string type)
+        public Task EnableCheckAsync(string clientId, string type)
         {
-            return CustomersChecksApi.EnablePepCheckAsync(clientId, type);
+            return CustomersChecksApi.EnableCheckAsync(clientId, type);
         }
     }
 }

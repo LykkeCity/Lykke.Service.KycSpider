@@ -40,7 +40,7 @@ namespace Lykke.Service.KycSpider.Controllers
         }
 
         [HttpPost("enablecheck/{clientId}/{type}")]
-        public async Task EnablePepCheckAsync(string clientId, string type)
+        public async Task EnableCheckAsync(string clientId, string type)
         {
             await _customerChecksService.EnableCheck(clientId, type);
         }
