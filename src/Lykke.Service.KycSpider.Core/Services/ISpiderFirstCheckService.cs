@@ -1,9 +1,10 @@
 ﻿using System.Threading.Tasks;
+using Lykke.Service.KycSpider.Core.Domain.SpiderCheck;
 
 namespace Lykke.Service.KycSpider.Core.Services
 {
     public interface ISpiderFirstCheckService
     {
-        Task PerformFirstCheckAsync(string clientId);
+        Task<SpiderDocumentAutoStatusGroup> PerformFirstCheckAsync(string clientId, ISpiderCheckResult spiderResult = null);
     }
 }

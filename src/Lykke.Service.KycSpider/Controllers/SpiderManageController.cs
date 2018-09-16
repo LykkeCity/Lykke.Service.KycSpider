@@ -1,17 +1,18 @@
 ﻿using System.Net;
 using System.Threading.Tasks;
+using Lykke.Service.KycSpider.Core.Domain.SpiderCheck;
 using Microsoft.AspNetCore.Mvc;
 using Lykke.Service.KycSpider.Core.Services;
 
 namespace Lykke.Service.KycSpider.Controllers
 {
     [Route("api/[controller]")]
-    public class SpiderController : Controller
+    public class SpiderManageController : Controller
     {
         private readonly ISpiderCheckManagerService _checkManagerService;
         private readonly ISpiderFirstCheckService _firstCheckService;
 
-        public SpiderController
+        public SpiderManageController
         (
             ISpiderCheckManagerService checkManagerService,
             ISpiderFirstCheckService firstCheckService
@@ -22,9 +23,8 @@ namespace Lykke.Service.KycSpider.Controllers
         }
 
 
-        [HttpGet("startregulalcheck")]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<IActionResult> RunRegularCheckAsync()
+        [HttpPost("startregulalcheck")]
+        public async Task<IActionResult> StartRegularCheckAsync()
         {
             var isStarted = await _checkManagerService.TryStartRegularCheckManuallyAsync();
 
@@ -36,13 +36,16 @@ namespace Lykke.Service.KycSpider.Controllers
             return Ok("Regular check started manually");
         }
 
-        [HttpGet("dofirstcheck/{clientId}")]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<IActionResult> DoFirstCheckAsync(string clientId)
+        [HttpPost("dofirstcheck/{clientId}")]
+        public async Task DoFirstCheckAsync(string clientId)
         {
             await _firstCheckService.PerformFirstCheckAsync(clientId);
+        }
 
-            return Ok();
+        [HttpPost("movefirstcheck/{clientId}")]
+        public async Task<SpiderDocumentAutoStatusGroup> MoveFirstCheckAsync(string clientId, [FromBody]SpiderCheckResult spiderResult)
+        {
+            return await _firstCheckService.PerformFirstCheckAsync(clientId, spiderResult);
         }
     }
 }

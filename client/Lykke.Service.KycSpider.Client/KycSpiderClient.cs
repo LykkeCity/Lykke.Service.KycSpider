@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Lykke.HttpClientGenerator;
+using Lykke.Service.KycSpider.Core.Domain.SpiderCheck;
 using Lykke.Service.KycSpider.Core.Domain.SpiderCheckInfo;
 
 namespace Lykke.Service.KycSpider.Client
@@ -9,6 +10,8 @@ namespace Lykke.Service.KycSpider.Client
     {
         /// <inheritdoc/>
         public ICustomersChecksApi CustomersChecksApi { get; private set; }
+
+        public ISpiderManageApi SpiderManageApi { get; private set; }
 
         /// <summary>C-tor</summary>
         public KycSpiderClient(IHttpClientGenerator httpClientGenerator)
@@ -29,6 +32,21 @@ namespace Lykke.Service.KycSpider.Client
         public Task EnableCheckAsync(string clientId, string type)
         {
             return CustomersChecksApi.EnableCheckAsync(clientId, type);
+        }
+
+        public Task StartRegularCheckAsync()
+        {
+            return SpiderManageApi.StartRegularCheckAsync();
+        }
+
+        public Task DoFirstCheckAsync(string clientId)
+        {
+            return SpiderManageApi.DoFirstCheckAsync(clientId);
+        }
+
+        public Task<SpiderDocumentAutoStatusGroup> MoveFirstCheckAsync(string clientId, ISpiderCheckResult spiderResult)
+        {
+            return SpiderManageApi.MoveFirstCheckAsync(clientId, spiderResult);
         }
     }
 }
