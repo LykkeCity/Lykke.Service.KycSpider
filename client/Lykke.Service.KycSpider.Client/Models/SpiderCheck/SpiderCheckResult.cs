@@ -9,6 +9,8 @@ namespace Lykke.Service.KycSpider.Core.Domain.SpiderCheck
         public string ResultId { get; set; }
         public long VerificationId { get; set; }
         public DateTime CheckDateTime { get; set; }
-        public IReadOnlyCollection<ISpiderProfile> PersonProfiles { get; set; }
+        public IReadOnlyCollection<SpiderProfile> PersonProfiles { get; set; }
+
+        IReadOnlyCollection<ISpiderProfile> ISpiderCheckResult.PersonProfiles => PersonProfiles;
     }
 }
