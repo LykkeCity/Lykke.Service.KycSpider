@@ -102,9 +102,9 @@ namespace Lykke.Service.KycSpider.Services
             var clientId = result.CustomerId;
             var checkId = result.ResultId;
 
-            var pepTask = SaveDocument(clientId, pepDiff, PepSpiderCheck.ApiType, checkId);
-            var crimeTask = SaveDocument(clientId, crimeDiff, CrimeSpiderCheck.ApiType, checkId);
-            var sanctionTask = SaveDocument(clientId, sanctionDiff, SanctionSpiderCheck.ApiType, checkId);
+            var pepTask = SaveDocument(clientId, pepDiff, PepSpiderCheck.ApiType, checkId, result.CheckDateTime);
+            var crimeTask = SaveDocument(clientId, crimeDiff, CrimeSpiderCheck.ApiType, checkId, result.CheckDateTime);
+            var sanctionTask = SaveDocument(clientId, sanctionDiff, SanctionSpiderCheck.ApiType, checkId, result.CheckDateTime);
 
             return new SpiderDocumentAutoStatusGroup
             {
@@ -114,10 +114,10 @@ namespace Lykke.Service.KycSpider.Services
             };
         }
 
-        private async Task<SpiderDocumentAutoStatus> SaveDocument(string clientId, ISpiderCheckResultDiff diff, string type, string checkId)
+        private async Task<SpiderDocumentAutoStatus> SaveDocument(string clientId, ISpiderCheckResultDiff diff, string type, string checkId, DateTime? changeDateTime)
         {
             var isAutoApprovedDiff = IsAutoApprovedDiff(diff);
-            var document = await SaveKycDocumentInfo(clientId, type, isAutoApprovedDiff);
+            var document = await SaveKycDocumentInfo(clientId, type, isAutoApprovedDiff, changeDateTime);
             var documentId = document.DocumentId;
 
             await SaveSpiderDocumentInfo(clientId, documentId, diff, checkId);
@@ -130,13 +130,14 @@ namespace Lykke.Service.KycSpider.Services
             };
         }
 
-        private async Task<IKycDocumentInfo> SaveKycDocumentInfo(string clientId, string type, bool isAutoApprovedDiff)
+        private async Task<IKycDocumentInfo> SaveKycDocumentInfo(string clientId, string type, bool isAutoApprovedDiff, DateTime? changeDateTime)
         {
             if (isAutoApprovedDiff)
             {
                 return await _spiderCheckProcessingService.AddApprovedSpiderCheck(clientId, type,
                     new KycChangeRequest<CommonSpiderCheck>
                     {
+                        ChangeDateTime = changeDateTime,
                         Changer = SpiderChanger,
                         StatusComment = AutoApprovedStatusComment,
                         Info = new CommonSpiderCheck
@@ -150,6 +151,7 @@ namespace Lykke.Service.KycSpider.Services
 
             return await _spiderCheckProcessingService.UploadSpiderCheck(clientId, type, new KycChangeRequest
             {
+                ChangeDateTime = changeDateTime,
                 Changer = SpiderChanger,
                 StatusComment = UploadedStatusComment
             });
