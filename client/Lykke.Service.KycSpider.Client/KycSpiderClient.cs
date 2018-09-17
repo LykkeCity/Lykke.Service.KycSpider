@@ -17,6 +17,7 @@ namespace Lykke.Service.KycSpider.Client
         public KycSpiderClient(IHttpClientGenerator httpClientGenerator)
         {
             CustomersChecksApi = httpClientGenerator.Generate<ICustomersChecksApi>();
+            SpiderManageApi = httpClientGenerator.Generate<ISpiderManageApi>();
         }
 
         public Task<CustomerChecksInfo> GetChecksInfoAsync(string clientId)
