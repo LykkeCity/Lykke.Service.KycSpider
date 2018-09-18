@@ -1,13 +1,14 @@
-﻿namespace Lykke.Service.KycSpider.Client 
+﻿using Lykke.SettingsReader.Attributes;
+
+namespace Lykke.Service.KycSpider.Client 
 {
     /// <summary>
-    /// Settings to initialize client of  Kyc Spider Service
+    /// KycSpider client settings.
     /// </summary>
     public class KycSpiderServiceClientSettings 
     {
-        /// <summary>
-        /// End point url of Kyc Spider Service
-        /// </summary>
+        /// <summary>Service url.</summary>
+        [HttpCheck("api/isalive")]
         public string ServiceUrl {get; set;}
     }
 }

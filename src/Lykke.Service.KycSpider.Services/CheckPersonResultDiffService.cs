@@ -27,6 +27,21 @@ namespace Lykke.Service.KycSpider.Services
             };
         }
 
+        public ISpiderCheckResultDiff ComputeDiffByPep(ISpiderCheckResult current, ISpiderCheckResult previous)
+        {
+            return ComputeDiffByCategory(current, previous, PepCategoryPredicate);
+        }
+
+        public ISpiderCheckResultDiff ComputeDiffByCrime(ISpiderCheckResult current, ISpiderCheckResult previous)
+        {
+            return ComputeDiffByCategory(current, previous, CrimeCategoryPredicate);
+        }
+
+        public ISpiderCheckResultDiff ComputeDiffBySanction(ISpiderCheckResult current, ISpiderCheckResult previous)
+        {
+            return ComputeDiffByCategory(current, previous, SanctionCategoryPredicate);
+        }
+
         public ISpiderCheckResultDiff ComputeDiffWithEmptyByPep(ISpiderCheckResult result)
         {
             return ComputeDiffWithEmpty(result, PepCategoryPredicate);

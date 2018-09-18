@@ -1,62 +1,53 @@
 ﻿using System.Threading.Tasks;
-using Lykke.Service.KycSpider.Client.AutorestClient;
-using Lykke.Service.KycSpider.Client.AutorestClient.Models;
+using Lykke.HttpClientGenerator;
+using Lykke.Service.KycSpider.Core.Domain.SpiderCheck;
+using Lykke.Service.KycSpider.Core.Domain.SpiderCheckInfo;
 
 namespace Lykke.Service.KycSpider.Client
 {
-    /// <summary>
-    /// Provides methods to interact with Kyc Spider Service
-    /// </summary>
+    /// <inheritdoc/>
     public class KycSpiderClient : IKycSpiderClient
     {
-        private readonly IKycSpiderAPI _api;
+        /// <inheritdoc/>
+        public ICustomersChecksApi CustomersChecksApi { get; private set; }
 
-        /// <summary>
-        /// Initializes a new instance of the KycSpiderClient class.
-        /// </summary>
-        public KycSpiderClient(IKycSpiderAPI api)
+        public ISpiderManageApi SpiderManageApi { get; private set; }
+
+        /// <summary>C-tor</summary>
+        public KycSpiderClient(IHttpClientGenerator httpClientGenerator)
         {
-            _api = api;
+            CustomersChecksApi = httpClientGenerator.Generate<ICustomersChecksApi>();
+            SpiderManageApi = httpClientGenerator.Generate<ISpiderManageApi>();
         }
 
-        /// <summary>
-        /// Gets spider-specific information about check document
-        /// </summary>
-        public Task<SpiderDocumentInfo> GetSpiderDocumentInfoAsync(string clientId, string documentId)
+        public Task<CustomerChecksInfo> GetChecksInfoAsync(string clientId)
         {
-            return _api.ApiSpiderDocumentsByClientIdByDocumentIdGetAsync(clientId, documentId);
+            return CustomersChecksApi.GetChecksInfoAsync(clientId);
         }
 
-        /// <summary>
-        /// Gets information about customer which is checks regularly by Kyc Spider Service
-        /// </summary>
-        public Task<VerifiableCustomerInfo> GetVerifiableCustomerInfoAsync(string clientId)
+        public Task<SpiderDocumentInfo> GetDocumentInfoAsync(string clientId, string documentId)
         {
-            return _api.ApiVerifiableCustomersByClientIdGetAsync(clientId);
+            return CustomersChecksApi.GetDocumentInfoAsync(clientId, documentId);
         }
 
-        /// <summary>
-        /// Disables regular pep check of customer
-        /// </summary>
-        public Task DisableCustomerPepCheckAsync(string clientId)
+        public Task EnableCheckAsync(string clientId, string type)
         {
-            return _api.ApiVerifiableCustomersDisablecheckByClientIdPepPostAsync(clientId);
+            return CustomersChecksApi.EnableCheckAsync(clientId, type);
         }
 
-        /// <summary>
-        /// Disables regular crime check of customer
-        /// </summary>
-        public Task DisableCustomerCrimeCheckAsync(string clientId)
+        public Task StartRegularCheckAsync()
         {
-            return _api.ApiVerifiableCustomersDisablecheckByClientIdCrimePostAsync(clientId);
+            return SpiderManageApi.StartRegularCheckAsync();
         }
 
-        /// <summary>
-        /// Disables regular sanction check of customer
-        /// </summary>
-        public Task DisableCustomerSanctionCheckAsync(string clientId)
+        public Task DoFirstCheckAsync(string clientId)
         {
-            return _api.ApiVerifiableCustomersDisablecheckByClientIdSanctionPostAsync(clientId);
+            return SpiderManageApi.DoFirstCheckAsync(clientId);
+        }
+
+        public Task<SpiderDocumentAutoStatusGroup> MoveFirstCheckAsync(string clientId, ISpiderCheckResult spiderResult)
+        {
+            return SpiderManageApi.MoveFirstCheckAsync(clientId, spiderResult);
         }
     }
 }

@@ -11,6 +11,7 @@ namespace Lykke.Service.KycSpider.Services.Repositories
         public DateTime StartDateTime { get; set; }
         public DateTime EndDateTime { get; set; }
 
+        public int TotalClients { get; set; }
         public int SpiderChecks { get; set; }
         public int PepSuspects { get; set; }
         public int CrimeSuspects { get; set; }

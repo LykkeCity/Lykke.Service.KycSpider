@@ -4,10 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Common.Log;
-using Lykke.Service.Kyc.Abstractions.Domain.KycDocuments.Contract;
-using Lykke.Service.Kyc.Abstractions.Requests;
+using Lykke.Common;
+using Lykke.Common.Log;
+using Lykke.Service.Kyc.Abstractions.Domain.KycDocuments;
+using Lykke.Service.Kyc.Abstractions.Domain.KycDocuments.Data;
 using Lykke.Service.Kyc.Abstractions.Services;
-using Lykke.Service.KycSpider.Core.Domain.PersonDiff;
 using Lykke.Service.KycSpider.Core.Domain.SpiderCheck;
 using Lykke.Service.KycSpider.Core.Domain.SpiderCheckInfo;
 using Lykke.Service.KycSpider.Core.Repositories;
@@ -20,42 +21,48 @@ namespace Lykke.Service.KycSpider.Services
         private readonly IGlobalCheckInfoService _globalCheckInfoService;
         private readonly ICheckPersonResultDiffService _diffService;
         private readonly ISpiderDocumentInfoRepository _spiderDocumentInfoRepository;
-        private readonly IVerifiableCustomerInfoRepository _verifiableCustomerRepository;
+        private readonly ICustomerChecksInfoRepository _customerChecksInfoRepository;
         private readonly ISpiderCheckService _spiderCheckService;
         private readonly ISpiderCheckResultRepository _spiderCheckResultRepository;
-        private readonly IRequestableDocumentsService _requestableDocumentsService;
+        private readonly ISpiderCheckProcessingService _spiderCheckProcessingService;
         private readonly ILog _log;
 
-        private static readonly Changer SpiderChanger = new Changer
+        private static readonly KycChanger SpiderChanger =
+            KycChanger.Service(AppEnvironment.Name, $"{AppEnvironment.Version}/{AppEnvironment.EnvInfo}");
+
+        private static readonly KycChangeRequest UploadRequest = new KycChangeRequest
         {
-            Name = "Spider"
+            Changer = SpiderChanger,
+            StatusComment = "Some profiles was changed or added"
         };
+
+        private static readonly GlobalCheckInfo SkippedClientCheckInfo = new GlobalCheckInfo {TotalClients = 1};
 
         public SpiderRegularCheckService
         (
             IGlobalCheckInfoService globalCheckInfoService,
             ICheckPersonResultDiffService diffService,
             ISpiderDocumentInfoRepository spiderDocumentInfoRepository,
-            IVerifiableCustomerInfoRepository verifiableCustomerRepository,
+            ICustomerChecksInfoRepository customerChecksInfoRepository,
             ISpiderCheckService spiderCheckService,
             ISpiderCheckResultRepository spiderCheckResultRepository,
-            IRequestableDocumentsService requestableDocumentsService,
-            ILog log
+            ISpiderCheckProcessingService spiderCheckProcessingService,
+            ILogFactory logFactory
         )
         {
             _globalCheckInfoService = globalCheckInfoService;
             _diffService = diffService;
             _spiderDocumentInfoRepository = spiderDocumentInfoRepository;
-            _verifiableCustomerRepository = verifiableCustomerRepository;
+            _customerChecksInfoRepository = customerChecksInfoRepository;
             _spiderCheckService = spiderCheckService;
             _spiderCheckResultRepository = spiderCheckResultRepository;
-            _requestableDocumentsService = requestableDocumentsService;
-            _log = log;
+            _spiderCheckProcessingService = spiderCheckProcessingService;
+            _log = logFactory.CreateLog(this);
         }
 
         public async Task PerformRegularCheckAsync()
         {
-            await _log.WriteInfoAsync(nameof(SpiderRegularCheckService), nameof(PerformRegularCheckAsync), "started");
+            _log.Info("Regular check started");
 
             var startDateTime = DateTime.UtcNow;
             var stats = new List<IGlobalCheckInfo>();
@@ -64,7 +71,7 @@ namespace Lykke.Service.KycSpider.Services
 
             while (true)
             {
-                var customers = (await _verifiableCustomerRepository.GetBatch(100, separatingClientId)).ToArray();
+                var customers = (await _customerChecksInfoRepository.GetBatch(100, separatingClientId)).ToArray();
 
                 if (!customers.Any())
                 {
@@ -79,150 +86,143 @@ namespace Lykke.Service.KycSpider.Services
             var endDateTime = DateTime.UtcNow;
             var checkInfo = SumStatistics(stats, startDateTime, endDateTime);
             await _globalCheckInfoService.AddCheckInfo(checkInfo);
-            await _log.WriteInfoAsync(nameof(SpiderRegularCheckService), nameof(PerformRegularCheckAsync), "done");
+
+            _log.Info("Regular check finished");
         }
 
-        private async Task<IGlobalCheckInfo> PerformRegularCheckAsync(IEnumerable<IVerifiableCustomerInfo> customers)
+        private async Task<GlobalCheckInfo> PerformRegularCheckAsync(IEnumerable<ICustomerChecksInfo> customers)
         {
-            var stats = new List<IGlobalCheckInfo>();
+            var stats = new List<GlobalCheckInfo>();
 
             foreach (var customer in customers)
             {
-                var request = new PersonDiffRequest
+                try
                 {
-                    Customer = customer,
-                    CurrentResult = await _spiderCheckService.CheckAsync(customer.CustomerId),
-                    PreviousResult = await _spiderCheckResultRepository.GetAsync(customer.CustomerId, customer.LatestSpiderCheckId)
-                };
-
-                var result = _diffService.ComputeAllDiffs(request);
-
-                await SaveDocuments(request, result);
-                await _verifiableCustomerRepository.UpdateSpiderCheckIdAsync(customer.CustomerId, request.CurrentResult.ResultId);
-
-                stats.Add(ComputeStatistics(request, result));
+                    stats.Add(await CheckCustomer(customer));
+                }
+                catch (Exception ex)
+                {
+                    _log.Error(ex, "Error at processing customer", customer);
+                }
             }
 
             return SumStatistics(stats);
         }
 
-        private async Task SaveDocuments(IPersonDiffRequest request, IPersonDiffResult result)
+        private async Task<GlobalCheckInfo> CheckCustomer(ICustomerChecksInfo customer)
         {
-            if (request.Customer.IsPepCheckRequired)
+            if (!customer.IsPepCheckRequired && !customer.IsCrimeCheckRequired && !customer.IsSanctionCheckRequired)
             {
-                var diff = result.PepDiff;
-
-                if (IsSuspectedDiff(diff))
-                {
-                    var doc = await _requestableDocumentsService.RequestDocumentFromOfficerAsync(
-                        request.Customer.CustomerId,
-                        DocumentTypes.PepCheckDocument,
-                        SpiderChanger);
-
-                    await _log.WriteInfoAsync(nameof(SpiderRegularCheckService), nameof(SaveDocuments),
-                        $"Client {doc.CustomerId} is suspected for pep created new document (DocumentId: {doc.DocumentId})");
-                    await _spiderDocumentInfoRepository.AddOrUpdateAsync(FormSpiderDocumentInfo(request, diff, doc));
-                }
-                else
-                {
-                    await _log.WriteInfoAsync(nameof(SpiderRegularCheckService), nameof(SaveDocuments),
-                        $"Client {request.Customer.CustomerId} is not suspected for pep");
-                }
+                return SkippedClientCheckInfo;
             }
 
-            if (request.Customer.IsCrimeCheckRequired)
-            {
-                var diff = result.CrimeDiff;
+            var clientId = customer.CustomerId;
 
-                if (IsSuspectedDiff(diff))
-                {
-                    var doc = await _requestableDocumentsService.RequestDocumentFromOfficerAsync(
-                        request.Customer.CustomerId,
-                        DocumentTypes.CrimeCheckDocument,
-                        SpiderChanger);
+            var currentResult = await _spiderCheckService.CheckAsync(clientId);
 
-                    await _log.WriteInfoAsync(nameof(SpiderRegularCheckService), nameof(SaveDocuments),
-                        $"Client {doc.CustomerId} is suspected for crime created new document (DocumentId: {doc.DocumentId})");
-                    await _spiderDocumentInfoRepository.AddOrUpdateAsync(FormSpiderDocumentInfo(request, diff, doc));
-                }
-                else
-                {
-                    await _log.WriteInfoAsync(nameof(SpiderRegularCheckService), nameof(SaveDocuments),
-                        $"Client {request.Customer.CustomerId} is not suspected for crime");
-                }
-            }
+            var pepSummary = await CheckCustomerByType(PepSpiderCheck.ApiType, customer, currentResult);
+            var crimeSummary = await CheckCustomerByType(CrimeSpiderCheck.ApiType, customer, currentResult);
+            var sanctionSummary = await CheckCustomerByType(SanctionSpiderCheck.ApiType, customer, currentResult);
 
-            if (request.Customer.IsSanctionCheckRequired)
-            {
-                var diff = result.SanctionDiff;
-
-                if (IsSuspectedDiff(diff))
-                {
-                    var doc = await _requestableDocumentsService.RequestDocumentFromOfficerAsync(
-                        request.Customer.CustomerId,
-                        DocumentTypes.SanctionCheckDocument,
-                        SpiderChanger);
-
-                    await _log.WriteInfoAsync(nameof(SpiderRegularCheckService), nameof(SaveDocuments),
-                        $"Client {doc.CustomerId} is suspected for sanction created new document (DocumentId: {doc.DocumentId})");
-                    await _spiderDocumentInfoRepository.AddOrUpdateAsync(FormSpiderDocumentInfo(request, diff, doc));
-                }
-                else
-                {
-                    await _log.WriteInfoAsync(nameof(SpiderRegularCheckService), nameof(SaveDocuments),
-                        $"Client {request.Customer.CustomerId} is not suspected for sanction");
-                }
-            }
+            return CalcClientCheckInfo(pepSummary, crimeSummary, sanctionSummary);
         }
 
-        private static ISpiderDocumentInfo FormSpiderDocumentInfo(IPersonDiffRequest request, ISpiderCheckResultDiff diff, IKycDocumentInfo doc)
+        private async Task<CheckSummary> CheckCustomerByType(string apiType, ICustomerChecksInfo customer, ISpiderCheckResult currentResult)
         {
-            return new SpiderDocumentInfo
+            if (!customer.GetIsCheckRequired(apiType))
             {
-                CustomerId = doc.CustomerId,
-                DocumentId = doc.DocumentId,
-                CheckDiff = Mapper.Map<SpiderCheckResultDiff>(diff),
-                CurrentCheckId = request.CurrentResult.ResultId,
-                PreviousCheckId = request.PreviousResult.ResultId
-            };
+                return CheckSummary.Empty;
+            }
+
+            var clientId = customer.CustomerId;
+            var previousResultId = customer.GetLatestCheckId(apiType);
+            var previousResult = await _spiderCheckResultRepository.GetAsync(clientId, previousResultId);
+            var diff = _diffService.ComputeDiff(apiType, currentResult, previousResult);
+            var summary = CheckSummary.FromDiff(diff);
+
+
+            if (summary.IsSuspected)
+            {
+                var document = await _spiderCheckProcessingService.UploadSpiderCheck(clientId, apiType, UploadRequest);
+
+                await _spiderDocumentInfoRepository.AddOrUpdateAsync(new SpiderDocumentInfo
+                {
+                    CustomerId = clientId,
+                    DocumentId = document.DocumentId,
+                    CheckDiff = Mapper.Map<SpiderCheckResultDiff>(diff),
+                    CurrentCheckId = currentResult.ResultId,
+                    PreviousCheckId = previousResultId
+                });
+
+                await _customerChecksInfoRepository.UpdateCheckStatesAsync(clientId, apiType, false);
+            }
+
+            await _customerChecksInfoRepository.UpdateLatestCheckIdAsync(clientId, apiType, currentResult.ResultId);
+
+            return summary;
         }
 
-        private static IGlobalCheckInfo ComputeStatistics(IPersonDiffRequest request, IPersonDiffResult result)
+        private static GlobalCheckInfo CalcClientCheckInfo(CheckSummary pep, CheckSummary crime, CheckSummary sanction)
         {
             return new GlobalCheckInfo
             {
+                PepSuspects = pep.IsSuspected.ToOneOrZero(),
+                CrimeSuspects = crime.IsSuspected.ToOneOrZero(),
+                SanctionSuspects = sanction.IsSuspected.ToOneOrZero(),
+
                 SpiderChecks = 1,
-                PepSuspects = IsSuspectedDiff(result.PepDiff) ? 1 : 0,
-                CrimeSuspects = IsSuspectedDiff(result.CrimeDiff) ? 1 : 0,
-                SanctionSuspects = IsSuspectedDiff(result.SanctionDiff) ? 1 : 0,
-                TotalProfiles = request.CurrentResult.PersonProfiles.Count,
-                AddedProfiles = result.PepDiff.AddedProfiles.Count + result.CrimeDiff.AddedProfiles.Count + result.SanctionDiff.AddedProfiles.Count,
-                RemovedProfiles = result.PepDiff.RemovedProfiles.Count + result.CrimeDiff.RemovedProfiles.Count + result.SanctionDiff.RemovedProfiles.Count,
-                ChangedProfiles = result.PepDiff.ChangedProfiles.Count + result.CrimeDiff.ChangedProfiles.Count + result.SanctionDiff.ChangedProfiles.Count
+                TotalClients = 1,
+
+                AddedProfiles = pep.AddedProfiles + crime.AddedProfiles + sanction.AddedProfiles,
+                ChangedProfiles = pep.ChangedProfiles + crime.ChangedProfiles + sanction.ChangedProfiles,
+                RemovedProfiles = pep.RemovedProfiles + crime.RemovedProfiles + sanction.RemovedProfiles
             };
         }
 
-        private static IGlobalCheckInfo SumStatistics(IReadOnlyCollection<IGlobalCheckInfo> stats, DateTime? start = null, DateTime? end = null)
+        private static GlobalCheckInfo SumStatistics(IReadOnlyCollection<IGlobalCheckInfo> stats, DateTime? start = null, DateTime? end = null)
         {
+            var added = stats.Sum(x => x.AddedProfiles);
+            var removed = stats.Sum(x => x.RemovedProfiles);
+            var changed = stats.Sum(x => x.ChangedProfiles);
+
             return new GlobalCheckInfo
             {
                 StartDateTime = start ?? default(DateTime),
                 EndDateTime = end ?? default(DateTime),
 
+                TotalClients = stats.Sum(x=> x.TotalClients),
                 SpiderChecks = stats.Sum(x => x.SpiderChecks),
                 PepSuspects = stats.Sum(x => x.PepSuspects),
                 CrimeSuspects = stats.Sum(x => x.CrimeSuspects),
                 SanctionSuspects = stats.Sum(x => x.SanctionSuspects),
-                TotalProfiles = stats.Sum(x => x.TotalProfiles),
-                AddedProfiles = stats.Sum(x => x.AddedProfiles),
-                RemovedProfiles = stats.Sum(x => x.RemovedProfiles),
-                ChangedProfiles = stats.Sum(x => x.ChangedProfiles)
+                TotalProfiles = added + changed + removed,
+                AddedProfiles = added,
+                RemovedProfiles = removed,
+                ChangedProfiles = changed
             };
         }
 
-        private static bool IsSuspectedDiff(ISpiderCheckResultDiff diff)
+        private class CheckSummary
         {
-            return diff.AddedProfiles.Count > 0 || diff.ChangedProfiles.Count > 0;
+            public int AddedProfiles { get; set; }
+
+            public int RemovedProfiles { get; set; }
+
+            public int ChangedProfiles { get; set; }
+
+            public bool IsSuspected => AddedProfiles > 0 || ChangedProfiles > 0;
+
+            public static CheckSummary FromDiff(ISpiderCheckResultDiff diff)
+            {
+                return new CheckSummary
+                {
+                    AddedProfiles = diff.AddedProfiles.Count,
+                    RemovedProfiles = diff.RemovedProfiles.Count,
+                    ChangedProfiles = diff.ChangedProfiles.Count
+                };
+            }
+
+            public static CheckSummary Empty => new CheckSummary();
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Lykke.Service.KycSpider.Tests
         {
             // this is sample of a test
             // add any assertions
-            // if is considered passed if no exceptions were thrown
+            // it is considered as passed if no exceptions were thrown
         }
     }
 
