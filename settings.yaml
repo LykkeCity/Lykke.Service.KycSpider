@@ -32,7 +32,7 @@ KycSpiderService:
     KycCqrsRabbitConnString:
         settings-key: KycShared-CqrsRabbitConnString
         types: [RabbitMq]
-    KycCqrsEnvironment: "lykke.kyc-service"
+    KycCqrsEnvironment: "lykke"
     EuroSpiderServiceSettings:
         User: 
             settings-key: KycSpider-SpiderServiceUser
