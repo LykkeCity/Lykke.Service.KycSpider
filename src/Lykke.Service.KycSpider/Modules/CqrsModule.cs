@@ -56,11 +56,10 @@ namespace Lykke.Service.KycSpider.Modules
                     Register.DefaultEndpointResolver(new RabbitMqConventionEndpointResolver("RabbitMq",
                         SerializationFormat.ProtoBuf, environment: _settings.KycSpiderService.KycCqrsEnvironment)),
 
-                    Register.BoundedContext("kyc-spider-status-proceed")
+                    Register.BoundedContext("kyc-spider")
                         .ListeningEvents(typeof(ChangeStatusEvent))
-                        .From("kyc-profile-status-changes")
-                        .On("kyc-profile-status-changes-commands")
-                        .WithProjection(projection, "kyc-profile-status-changes")
+                        .From("kyc").On("events")
+                        .WithProjection(projection, "kyc")
                 );
             }).As<ICqrsEngine>().SingleInstance().AutoActivate();
         }
